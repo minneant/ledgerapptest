@@ -46,6 +46,8 @@ function TransactionModal({ onClose, initialDate }) {
     try {
       const response = await fetch(WEB_APP_URL, {
         method: 'POST',
+        mode: 'cors',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
         },
