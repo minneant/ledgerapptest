@@ -39,13 +39,24 @@ function App() {
 
   // 캘린더 날짜 표시 클릭 이벤트 추가
   useEffect(() => {
-    const titleElement = document.querySelector('.fc-toolbar-title');
-    if (titleElement) {
-      const handleClick = () => setShowDatePicker(true);
-      titleElement.addEventListener('click', handleClick);
-      return () => titleElement.removeEventListener('click', handleClick);
+    if (activeTab === 'calendar') {
+      // FullCalendar가 렌더링된 후 fc-toolbar-title 요소를 찾기 위해 약간의 지연 추가
+      const timer = setTimeout(() => {
+        const titleElement = document.querySelector('.fc-toolbar-title');
+        if (titleElement) {
+          const handleClick = () => setShowDatePicker(true);
+          titleElement.addEventListener('click', handleClick);
+          // cleanup 함수에서 이벤트 리스너 제거
+          return () => {
+            titleElement.removeEventListener('click', handleClick);
+          };
+        }
+      }, 100); // 100ms 지연
+
+      // cleanup 함수에서 타이머 제거
+      return () => clearTimeout(timer);
     }
-  }, []);
+  }, [activeTab]); // activeTab이 변경될 때마다 실행
 
   const handleDateClick = (arg) => {
     const formattedDate = arg.dateStr;
@@ -136,6 +147,9 @@ function App() {
           </div>
         </div>
       )}
+
+      <div className="version">v000</div>
+      
     </div>
   );
 }
