@@ -58,18 +58,18 @@ function TransactionModal({ onClose, initialDate }) {
       const response = await fetch(WEB_APP_URL, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded', // 바꿨음!!
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: formBody,
       });
   
-      const resultText = await response.text(); // GAS는 그냥 "Success" 같은 text 내려줌
+      const result = await response.json(); // result는 JSON 객체야!
   
-      if (response.ok && resultText.includes('Success')) {
+      if (response.ok && result.status === 'success') {
         alert('저장 완료!');
         onClose();
       } else {
-        alert('저장 실패: ' + resultText);
+        alert('저장 실패: ' + (result.message || '오류'));
       }
     } catch (error) {
       alert('저장 실패: ' + error);
