@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzKfD5wD0aRa6cCT71oWzHaMCZ5kRe7jiGAdq-jmzSMn8N9fK6UOsxI1OB0KLcEqRxB/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw0kQYuq1Zr5GN3T1yi7vBxrWamsMaB6lBzTMnubGPQMtdQEK1lgs986sun8I5mIU-c/exec';
 
 function TransactionModal({ onClose, initialDate }) {
   const [step, setStep] = useState(1);
