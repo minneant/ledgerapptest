@@ -44,31 +44,32 @@ function TransactionModal({ onClose, initialDate }) {
 
   const saveTransaction = async () => {
     try {
+      // x-www-form-urlencoded 형식으로 body 구성
+      const formBody = `data=${encodeURIComponent(JSON.stringify({
+        date: formData.date,
+        type: formData.type,
+        amount: formData.amount,
+        debitAccount: formData.debitAccount,
+        creditAccount: formData.creditAccount,
+        description: formData.description,
+        note: formData.note,
+      }))}`;
+  
       const response = await fetch(WEB_APP_URL, {
         method: 'POST',
-        mode: 'cors',
-        credentials: 'omit',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded', // 바꿨음!!
         },
-        body: JSON.stringify({
-          data: {
-            date: formData.date,
-            type: formData.type,
-            amount: formData.amount,
-            debitAccount: formData.debitAccount,
-            creditAccount: formData.creditAccount,
-            description: formData.description,
-            note: formData.note,
-          },
-        }),
+        body: formBody,
       });
-      const result = await response.json();
-      if (response.ok && result.status === 'success') {
+  
+      const resultText = await response.text(); // GAS는 그냥 "Success" 같은 text 내려줌
+  
+      if (response.ok && resultText.includes('Success')) {
         alert('저장 완료!');
         onClose();
       } else {
-        alert('저장 실패: ' + result);
+        alert('저장 실패: ' + resultText);
       }
     } catch (error) {
       alert('저장 실패: ' + error);
