@@ -34,7 +34,7 @@
 
     /* 📅 FullCalendar 날짜 숫자 (셀 오른쪽 위) 크기 */
   .fc .fc-daygrid-day-number {
-    font-size: clamp(12px, 2.5vw, 18px);
+    font-size: clamp(8px, 2.5vw, 18px);
     padding: 2px;
   }
 
@@ -43,7 +43,7 @@
   .fc-event-time,
   .income-text,
   .expense-text {
-    font-size: clamp(10px, 2vw, 14px);
+    font-size: clamp(5px, 2vw, 14px);
     line-height: 1.2;
   }
 
