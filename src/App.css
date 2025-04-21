@@ -61,37 +61,3 @@
 .modal button:hover {
   background-color: #45a049;
 }
-
-/* 캘린더에서 클릭한 날짜 배경 표시 */
-.selected-date {
-  background-color: #ffeaa7 !important;
-}
-
-/* 하단 거래 내역 UI */
-.transaction-details {
-  margin: 1rem;
-  padding: 1rem;
-  border-top: 1px solid #ccc;
-  background-color: #fafafa;
-  border-radius: 10px;
-}
-
-.transaction-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 0;
-}
-
-.transaction-item .account {
-  font-weight: bold;
-  color: #0984e3;
-}
-
-.transaction-item .description {
-  flex: 1;
-  margin: 0 1rem;
-}
-
-.transaction-item .amount {
-  color: #2d3436;
-}
