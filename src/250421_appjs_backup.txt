@@ -19,60 +19,44 @@ function App() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const calendarRef = useRef(null);
 
-  // 거래내역 조회 + 수입/지출 집계
+  // 거래내역 조회
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
         const response = await axios.get(`${WEB_APP_URL}?action=getTransactions`);
         const transactions = response.data;
-
-        const dailyMap = {};
-
-        transactions.forEach((trans) => {
-          const dateStr = trans.date.split('T')[0];
-          const amount = parseInt(trans.amount);
-
-          if (!dailyMap[dateStr]) {
-            dailyMap[dateStr] = { income: 0, expense: 0 };
-          }
-
-          if (trans.type === '+') {
-            dailyMap[dateStr].income += amount;
-          } else if (trans.type === '-') {
-            dailyMap[dateStr].expense += amount;
-          }
-        });
-
-        const calendarEvents = Object.entries(dailyMap).map(([date, { income, expense }]) => ({
-          title: '', // 타이틀은 사용 안 함
-          date,
-          income,
-          expense,
+        const calendarEvents = transactions.map((trans) => ({
+          title: `${trans.description} (${trans.amount}원)`,
+          date: trans.date,
         }));
-
         setEvents(calendarEvents);
       } catch (error) {
         console.error('거래내역 조회 오류:', error);
       }
     };
-
     fetchTransactions();
   }, []);
 
-  // 캘린더 타이틀 클릭 시 날짜 선택 모달
+  // 캘린더 날짜 표시 클릭 이벤트 추가
   useEffect(() => {
     if (activeTab === 'calendar') {
+      // FullCalendar가 렌더링된 후 fc-toolbar-title 요소를 찾기 위해 약간의 지연 추가
       const timer = setTimeout(() => {
         const titleElement = document.querySelector('.fc-toolbar-title');
         if (titleElement) {
           const handleClick = () => setShowDatePicker(true);
           titleElement.addEventListener('click', handleClick);
-          return () => titleElement.removeEventListener('click', handleClick);
+          // cleanup 함수에서 이벤트 리스너 제거
+          return () => {
+            titleElement.removeEventListener('click', handleClick);
+          };
         }
-      }, 100);
+      }, 100); // 100ms 지연
+
+      // cleanup 함수에서 타이머 제거
       return () => clearTimeout(timer);
     }
-  }, [activeTab]);
+  }, [activeTab]); // activeTab이 변경될 때마다 실행
 
   const handleDateClick = (arg) => {
     const formattedDate = arg.dateStr;
@@ -117,19 +101,6 @@ function App() {
             center: 'title',
             right: 'next',
           }}
-          eventContent={(arg) => {
-            const { income = 0, expense = 0 } = arg.event.extendedProps;
-            return (
-              <div style={{ textAlign: 'left', fontSize: '0.75rem' }}>
-                {income > 0 && (
-                  <div style={{ color: 'green' }}>+{income.toLocaleString()}원</div>
-                )}
-                {expense > 0 && (
-                  <div style={{ color: 'red' }}>-{expense.toLocaleString()}원</div>
-                )}
-              </div>
-            );
-          }}
           datesSet={(dateInfo) => {
             setSelectedYear(dateInfo.view.currentStart.getFullYear());
             setSelectedMonth(dateInfo.view.currentStart.getMonth() + 1);
@@ -138,7 +109,6 @@ function App() {
       )}
 
       <button className="add-btn" onClick={() => setShowModal(true)}>+</button>
-
       {showModal && (
         <TransactionModal
           onClose={() => setShowModal(false)}
@@ -178,7 +148,8 @@ function App() {
         </div>
       )}
 
-      <div className="version">v001</div>
+      <div className="version">v000</div>
+      
     </div>
   );
 }
