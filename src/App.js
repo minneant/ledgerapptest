@@ -19,7 +19,6 @@ function App() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const calendarRef = useRef(null);
 
-  // 📌 거래내역 불러오는 함수
   const fetchTransactions = async () => {
     try {
       const response = await axios.get(`${WEB_APP_URL}?action=getTransactions`);
@@ -32,7 +31,7 @@ function App() {
         const amount = parseInt(trans.amount);
 
         if (!dailyMap[dateStr]) {
-          dailyMap[dateStr] = { income: 0, expense: 0 };
+          dailyMap[dateStr] = { income: 0, expense: 0, transactions: [] };
         }
 
         if (trans.type === '+') {
@@ -40,13 +39,16 @@ function App() {
         } else if (trans.type === '-') {
           dailyMap[dateStr].expense += amount;
         }
+
+        dailyMap[dateStr].transactions.push(trans);
       });
 
-      const calendarEvents = Object.entries(dailyMap).map(([date, { income, expense }]) => ({
+      const calendarEvents = Object.entries(dailyMap).map(([date, { income, expense, transactions }]) => ({
         title: '',
         date,
         income,
         expense,
+        raw: transactions, // 거래 내역 전체 전달
       }));
 
       setEvents(calendarEvents);
@@ -55,12 +57,10 @@ function App() {
     }
   };
 
-  // 🚀 최초 실행 시 거래내역 로딩
   useEffect(() => {
     fetchTransactions();
   }, []);
 
-  // 📆 제목 클릭 시 월선택 모달 열기
   useEffect(() => {
     if (activeTab === 'calendar') {
       const timer = setTimeout(() => {
@@ -80,17 +80,17 @@ function App() {
     setSelectedDate(formattedDate);
     setShowModal(false);
   };
-  // 해당 날짜에만 하이라이트 스타일 적용
+
   const getDayCellClassNames = (arg) => {
     if (selectedDate === arg.dateStr) {
       return ['selected-date'];
-   }
+    }
     return [];
   };
-  // 선택 날짜의 거래 필터링
+
   const selectedTransactions = events
-    .filter(event => event.raw?.date === selectedDate)
-    .map(event => event.raw); // raw에 원본 거래정보가 들어있도록 fetch 시 넣어줬음
+    .filter(event => event.date === selectedDate)
+    .flatMap(event => event.raw || []);
 
   const handleDateSelect = () => {
     if (calendarRef.current) {
@@ -102,7 +102,7 @@ function App() {
 
   const handleModalClose = () => {
     setShowModal(false);
-    fetchTransactions(); // 💥 거래내역 다시 불러오기
+    fetchTransactions();
   };
 
   const years = Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - i);
@@ -123,60 +123,63 @@ function App() {
       {activeTab === 'chart' ? (
         <ChartView />
       ) : (
-        <FullCalendar
-          ref={calendarRef}
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          events={events}
-          dateClick={handleDateClick}
-          headerToolbar={{
-            left: 'prev',
-            center: 'title',
-            right: 'next',
-          }}
-          eventBackgroundColor="transparent"
-          eventBorderColor="transparent"
-          eventDisplay="block"
+        <>
+          <FullCalendar
+            ref={calendarRef}
+            plugins={[dayGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            events={events}
+            dateClick={handleDateClick}
+            dayCellClassNames={getDayCellClassNames}
+            headerToolbar={{
+              left: 'prev',
+              center: 'title',
+              right: 'next',
+            }}
+            eventBackgroundColor="transparent"
+            eventBorderColor="transparent"
+            eventDisplay="block"
+            eventContent={(arg) => {
+              const { income = 0, expense = 0 } = arg.event.extendedProps;
+              return (
+                <div style={{ textAlign: 'left', fontSize: '0.75rem' }}>
+                  {income > 0 && (
+                    <div style={{ color: 'limegreen' }}>+{income.toLocaleString()}원</div>
+                  )}
+                  {expense > 0 && (
+                    <div style={{ color: 'tomato' }}>-{expense.toLocaleString()}원</div>
+                  )}
+                </div>
+              );
+            }}
+            datesSet={(dateInfo) => {
+              setSelectedYear(dateInfo.view.currentStart.getFullYear());
+              setSelectedMonth(dateInfo.view.currentStart.getMonth() + 1);
+            }}
+          />
 
-          eventContent={(arg) => {
-            const { income = 0, expense = 0 } = arg.event.extendedProps;
-            return (
-              <div style={{ textAlign: 'left', fontSize: '0.75rem' }}>
-                {income > 0 && (
-                  <div style={{ color: 'limegreen' }}>+{income.toLocaleString()}원</div>
-                )}
-                {expense > 0 && (
-                  <div style={{ color: 'tomato' }}>-{expense.toLocaleString()}원</div>
-                )}
-              </div>
-            );
-          }}
-          datesSet={(dateInfo) => {
-            setSelectedYear(dateInfo.view.currentStart.getFullYear());
-            setSelectedMonth(dateInfo.view.currentStart.getMonth() + 1);
-          }}
-        />
-        {selectedDate && selectedTransactions.length > 0 && (
-          <div className="transaction-details">
-            <h3>{selectedDate} 거래내역</h3>
-            <ul>
-              {selectedTransactions.map((trans, index) => (
-                <li key={index} className="transaction-item">
-                  <span className="account">{trans.debitAccount}</span>
-                  <span className="description">{trans.description}</span>
-                  <span className="amount">{Number(trans.amount).toLocaleString()}원</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+          {selectedDate && selectedTransactions.length > 0 && (
+            <div className="transaction-details">
+              <h3>{selectedDate} 거래내역</h3>
+              <ul>
+                {selectedTransactions.map((trans, index) => (
+                  <li key={index} className="transaction-item">
+                    <span className="account">{trans.debitAccount}</span>
+                    <span className="description">{trans.description}</span>
+                    <span className="amount">{Number(trans.amount).toLocaleString()}원</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
       )}
 
       <button className="add-btn" onClick={() => setShowModal(true)}>+</button>
 
       {showModal && (
         <TransactionModal
-          onClose={handleModalClose} // ✅ 모달 닫을 때 거래내역 갱신
+          onClose={handleModalClose}
           initialDate={selectedDate || new Date().toISOString().split('T')[0]}
         />
       )}
@@ -186,20 +189,14 @@ function App() {
           <div className="modal-content">
             <h2>월 선택</h2>
             <div className="date-picker">
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              >
+              <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))}>
                 {years.map((year) => (
                   <option key={year} value={year}>
                     {year}
                   </option>
                 ))}
               </select>
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              >
+              <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))}>
                 {months.map((month) => (
                   <option key={month} value={month}>
                     {month}월
