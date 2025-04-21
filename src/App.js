@@ -78,8 +78,19 @@ function App() {
   const handleDateClick = (arg) => {
     const formattedDate = arg.dateStr;
     setSelectedDate(formattedDate);
-    setShowModal(true);
+    setShowModal(false);
   };
+  // 해당 날짜에만 하이라이트 스타일 적용
+  const getDayCellClassNames = (arg) => {
+    if (selectedDate === arg.dateStr) {
+      return ['selected-date'];
+   }
+    return [];
+  };
+  // 선택 날짜의 거래 필터링
+  const selectedTransactions = events
+    .filter(event => event.raw?.date === selectedDate)
+    .map(event => event.raw); // raw에 원본 거래정보가 들어있도록 fetch 시 넣어줬음
 
   const handleDateSelect = () => {
     if (calendarRef.current) {
@@ -145,6 +156,20 @@ function App() {
             setSelectedMonth(dateInfo.view.currentStart.getMonth() + 1);
           }}
         />
+        {selectedDate && selectedTransactions.length > 0 && (
+          <div className="transaction-details">
+            <h3>{selectedDate} 거래내역</h3>
+            <ul>
+              {selectedTransactions.map((trans, index) => (
+                <li key={index} className="transaction-item">
+                  <span className="account">{trans.debitAccount}</span>
+                  <span className="description">{trans.description}</span>
+                  <span className="amount">{Number(trans.amount).toLocaleString()}원</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       )}
 
       <button className="add-btn" onClick={() => setShowModal(true)}>+</button>
