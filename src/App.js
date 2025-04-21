@@ -130,7 +130,7 @@ function App() {
           eventContent={(arg) => {
             const { income = 0, expense = 0 } = arg.event.extendedProps;
             return (
-              <div style={{ textAlign: 'left', fontSize: '0.75rem' }}>
+              <div style={{ textAlign: 'left'}}>
                 {income > 0 && (
                   <div style={{ color: 'limegreen' }}>+{income.toLocaleString()}원</div>
                 )}

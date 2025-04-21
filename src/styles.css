@@ -31,6 +31,35 @@
     border: none;
     padding: 5px 10px;
   }
+
+    /* 📅 FullCalendar 날짜 숫자 (셀 오른쪽 위) 크기 */
+  .fc .fc-daygrid-day-number {
+    font-size: clamp(12px, 2.5vw, 18px);
+    padding: 2px;
+  }
+
+  /* 📅 FullCalendar 이벤트 텍스트 크기 - 수입/지출 표시 */
+  .fc .fc-event-title,
+  .fc-event-time,
+  .income-text,
+  .expense-text {
+    font-size: clamp(10px, 2vw, 14px);
+    line-height: 1.2;
+  }
+
+  /* 수입/지출 텍스트 색상 클래스 */
+  .income-text {
+    color: limegreen;
+  }
+
+  .expense-text {
+    color: tomato;
+  }
+
+  /* FullCalendar 셀 안쪽 여백 살짝 조정 (선택사항) */
+  .fc .fc-daygrid-day-frame {
+    padding: 4px;
+  }
   
   .fc-toolbar-title:hover {
     color: #4CAF50;
