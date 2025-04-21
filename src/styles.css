@@ -42,10 +42,11 @@
   .fc .fc-event-title,
   .fc-event-time,
   .income-text,
-  .expense-text {
-    font-size: clamp(5px, 2vw, 14px);
-    line-height: 1.2;
+  .expense-text,
+  .fc-event-main {
+    font-size: clamp(5px, 2vw, 14px) !important;
   }
+  
 
   /* 수입/지출 텍스트 색상 클래스 */
   .income-text {

@@ -132,10 +132,10 @@ function App() {
             return (
               <div style={{ textAlign: 'left'}}>
                 {income > 0 && (
-                  <div style={{ color: 'limegreen' }}>+{income.toLocaleString()}원</div>
+                  <div style={{ color: 'limegreen' }}>+{income.toLocaleString()}</div>
                 )}
                 {expense > 0 && (
-                  <div style={{ color: 'tomato' }}>-{expense.toLocaleString()}원</div>
+                  <div style={{ color: 'tomato' }}>-{expense.toLocaleString()}</div>
                 )}
               </div>
             );
