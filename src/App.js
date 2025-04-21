@@ -19,47 +19,48 @@ function App() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const calendarRef = useRef(null);
 
-  // 거래내역 조회 + 수입/지출 집계
+  // 📌 거래내역 불러오는 함수
+  const fetchTransactions = async () => {
+    try {
+      const response = await axios.get(`${WEB_APP_URL}?action=getTransactions`);
+      const transactions = response.data;
+
+      const dailyMap = {};
+
+      transactions.forEach((trans) => {
+        const dateStr = trans.date.split('T')[0];
+        const amount = parseInt(trans.amount);
+
+        if (!dailyMap[dateStr]) {
+          dailyMap[dateStr] = { income: 0, expense: 0 };
+        }
+
+        if (trans.type === '+') {
+          dailyMap[dateStr].income += amount;
+        } else if (trans.type === '-') {
+          dailyMap[dateStr].expense += amount;
+        }
+      });
+
+      const calendarEvents = Object.entries(dailyMap).map(([date, { income, expense }]) => ({
+        title: '',
+        date,
+        income,
+        expense,
+      }));
+
+      setEvents(calendarEvents);
+    } catch (error) {
+      console.error('거래내역 조회 오류:', error);
+    }
+  };
+
+  // 🚀 최초 실행 시 거래내역 로딩
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const response = await axios.get(`${WEB_APP_URL}?action=getTransactions`);
-        const transactions = response.data;
-
-        const dailyMap = {};
-
-        transactions.forEach((trans) => {
-          const dateStr = trans.date.split('T')[0];
-          const amount = parseInt(trans.amount);
-
-          if (!dailyMap[dateStr]) {
-            dailyMap[dateStr] = { income: 0, expense: 0 };
-          }
-
-          if (trans.type === '+') {
-            dailyMap[dateStr].income += amount;
-          } else if (trans.type === '-') {
-            dailyMap[dateStr].expense += amount;
-          }
-        });
-
-        const calendarEvents = Object.entries(dailyMap).map(([date, { income, expense }]) => ({
-          title: '', // 타이틀은 사용 안 함
-          date,
-          income,
-          expense,
-        }));
-
-        setEvents(calendarEvents);
-      } catch (error) {
-        console.error('거래내역 조회 오류:', error);
-      }
-    };
-
     fetchTransactions();
   }, []);
 
-  // 캘린더 타이틀 클릭 시 날짜 선택 모달
+  // 📆 제목 클릭 시 월선택 모달 열기
   useEffect(() => {
     if (activeTab === 'calendar') {
       const timer = setTimeout(() => {
@@ -86,6 +87,11 @@ function App() {
       calendarApi.gotoDate(`${selectedYear}-${selectedMonth.toString().padStart(2, '0')}-01`);
     }
     setShowDatePicker(false);
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    fetchTransactions(); // 💥 거래내역 다시 불러오기
   };
 
   const years = Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - i);
@@ -117,15 +123,19 @@ function App() {
             center: 'title',
             right: 'next',
           }}
+          eventBackgroundColor="transparent"
+          eventBorderColor="transparent"
+          eventDisplay="block"
+
           eventContent={(arg) => {
             const { income = 0, expense = 0 } = arg.event.extendedProps;
             return (
               <div style={{ textAlign: 'left', fontSize: '0.75rem' }}>
                 {income > 0 && (
-                  <div style={{ color: 'green' }}>+{income.toLocaleString()}원</div>
+                  <div style={{ color: 'limegreen' }}>+{income.toLocaleString()}원</div>
                 )}
                 {expense > 0 && (
-                  <div style={{ color: 'red' }}>-{expense.toLocaleString()}원</div>
+                  <div style={{ color: 'tomato' }}>-{expense.toLocaleString()}원</div>
                 )}
               </div>
             );
@@ -141,7 +151,7 @@ function App() {
 
       {showModal && (
         <TransactionModal
-          onClose={() => setShowModal(false)}
+          onClose={handleModalClose} // ✅ 모달 닫을 때 거래내역 갱신
           initialDate={selectedDate || new Date().toISOString().split('T')[0]}
         />
       )}
