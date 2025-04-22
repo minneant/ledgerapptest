@@ -95,7 +95,7 @@ function TransactionModal({ onClose, initialDate }) {
           </>
         );
       case 2:
-        if (formData.type === '+') {
+        if (formData.type === '수입') {
           return (
             <>
               <h2>차변 계정 선택</h2>
@@ -146,7 +146,7 @@ function TransactionModal({ onClose, initialDate }) {
           </>
         );
       case 4:
-        if (formData.type === '+') {
+        if (formData.type === '수입') {
           return (
             <>
               <h2>대변 계정 선택</h2>
