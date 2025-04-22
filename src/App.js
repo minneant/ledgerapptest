@@ -35,9 +35,9 @@ function App() {
           dailyMap[dateStr] = { income: 0, expense: 0 };
         }
 
-        if (trans.type === '+') {
+        if (trans.type === '수입') {
           dailyMap[dateStr].income += amount;
-        } else if (trans.type === '-') {
+        } else if (trans.type === '지출') {
           dailyMap[dateStr].expense += amount;
         }
       });

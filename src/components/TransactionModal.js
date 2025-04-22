@@ -38,7 +38,7 @@ function TransactionModal({ onClose, initialDate }) {
   };
 
   const handleTypeSelect = (type) => {
-    handleInputChange('type', type === '수입' ? '+' : '-');
+    handleInputChange('type', type === '수입' ? '수입' : '지출');
     handleNext();
   };
 
