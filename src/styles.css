@@ -1,194 +1,212 @@
 .app {
-    padding: 20px;
-    position: relative;
-  }
-  
-  header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  header h1 {
-    flex-grow: 1;
-  }
-  
-  .toggle-btn {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    margin-right: 10px;
-  }
-  
-  /* FullCalendar의 날짜 표시 부분 스타일링 */
-  .fc-toolbar-title {
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-    cursor: pointer;
-    background: none;
-    border: none;
-    padding: 5px 10px;
-  }
+  padding: 20px;
+  position: relative;
+}
 
-    /* 📅 FullCalendar 날짜 숫자 (셀 오른쪽 위) 크기 */
-  .fc .fc-daygrid-day-number {
-    font-size: clamp(8px, 2.5vw, 18px);
-    padding: 2px;
-  }
+header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
 
-  /* 📅 FullCalendar 이벤트 텍스트 크기 - 수입/지출 표시 */
-  .fc .fc-event-title,
-  .fc-event-time,
-  .income-text,
-  .expense-text,
-  .fc-event-main {
-    font-size: clamp(5px, 2vw, 14px) !important;
-  }
-  
+header h1 {
+  flex-grow: 1;
+}
 
-  /* 수입/지출 텍스트 색상 클래스 */
-  .income-text {
-    color: limegreen;
-  }
+.toggle-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  margin-right: 10px;
+}
 
-  .expense-text {
-    color: tomato;
-  }
+/* FullCalendar의 날짜 표시 부분 스타일링 */
+.fc-toolbar-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 5px 10px;
+}
 
-  /* FullCalendar 셀 안쪽 여백 살짝 조정 (선택사항) */
-  .fc .fc-daygrid-day-frame {
-    padding: 4px;
-  }
-  
-  .fc-toolbar-title:hover {
-    color: #4CAF50;
-  }
-  
-  .add-btn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: #4CAF50;
-    color: white;
-    font-size: 24px;
-    z-index: 1001;
-  }
-  
-  .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1002;
-  }
-  
-  .modal-content {
-    background: white;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    text-align: center;
-    width: 300px;
-    position: relative;
-  }
-  
-  .modal-content h2 {
-    margin-bottom: 20px;
-  }
-  
-  .date-picker {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-  }
-  
-  .date-picker select {
-    width: 45%;
-    padding: 5px;
-  }
-  
-  .modal button {
-    margin: 5px;
-    padding: 5px 10px;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .modal button:hover {
-    background: #45a049;
-  }
-  
-  .modal select,
-  .modal input {
-    width: 80%;
-    padding: 5px;
-    margin: 5px 0;
-  }
-  
-  .modal p {
-    margin: 10px 0;
-  }
+/* 📅 FullCalendar 날짜 숫자 (셀 오른쪽 위) 크기 */
+.fc .fc-daygrid-day-number {
+  font-size: clamp(8px, 2.5vw, 18px);
+  padding: 2px;
+}
 
-  .version {
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    font-size: 12px;
-    color: #cccccc; /* 연한 회색 */
-    z-index: 1000;
-  }
+/* 📅 FullCalendar 이벤트 텍스트 크기 - 수입/지출 표시 */
+.fc .fc-event-title,
+.fc-event-time,
+.income-text,
+.expense-text,
+.fc-event-main {
+  font-size: clamp(5px, 2vw, 14px) !important;
+}
 
+/* 수입/지출 텍스트 색상 클래스 */
+.income-text {
+  color: limegreen;
+}
 
-  /* 호버 효과 */
-  .fc-daygrid-day:hover {
-    background-color: #f0f8ff;
-    cursor: pointer;
-  }
+.expense-text {
+  color: tomato;
+}
 
-  /* 이벤트 z-index 낮춤 */
-  .fc-event {
-    z-index: 5; /* 이벤트를 날짜 셀 아래로 */
-  }
+/* FullCalendar 셀 안쪽 여백 살짝 조정 (선택사항) */
+.fc .fc-daygrid-day-frame {
+  padding: 4px;
+}
 
-  /* 거래 내역 테이블 스타일 */
-  .transaction-list {
-    margin: 20px;
-    padding: 10px;
-  }
+.fc-toolbar-title:hover {
+  color: #4CAF50;
+}
 
-  .transaction-list h2 {
-    font-size: 1.2em;
-    margin-bottom: 10px;
-  }
+.add-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #4CAF50;
+  color: white;
+  font-size: 24px;
+  z-index: 1001;
+}
 
-  .transaction-list table {
-    width: 100%;
-    border-collapse: collapse;
-  }
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1002;
+}
 
-  .transaction-list th,
-  .transaction-list td {
-    padding: 8px;
-    border: 1px solid #ddd;
-    text-align: left;
-  }
+.modal-content {
+  background: white;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: center;
+  width: 300px;
+  position: relative;
+}
 
-  .transaction-list th {
-    background-color: #f4f4f4;
-  }
+.modal-content h2 {
+  margin-bottom: 20px;
+}
 
-  .transaction-list p {
-    color: #666;
-  }
+.date-picker {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.date-picker select {
+  width: 45%;
+  padding: 5px;
+}
+
+.modal button {
+  margin: 5px;
+  padding: 5px 10px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.modal button:hover {
+  background: #45a049;
+}
+
+.modal select,
+.modal input {
+  width: 80%;
+  padding: 5px;
+  margin: 5px 0;
+}
+
+.modal p {
+  margin: 10px 0;
+}
+
+.version {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  font-size: 12px;
+  color: #cccccc; /* 연한 회색 */
+  z-index: 1000;
+}
+
+/* 호버 효과 */
+.fc-daygrid-day:hover {
+  background-color: #f0f8ff;
+  cursor: pointer;
+}
+
+/* 이벤트 z-index 낮춤 */
+.fc-event {
+  z-index: 5; /* 이벤트를 날짜 셀 아래로 */
+}
+
+/* 거래 내역 테이블 스타일 */
+.transaction-list {
+  margin: 20px;
+  padding: 10px;
+}
+
+.transaction-list h2 {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+.transaction-list table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* 셀 너비 고정 */
+  max-width: 100%; /* 화면 너비 초과 방지 */
+}
+
+.transaction-list th,
+.transaction-list td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
+  font-size: clamp(12px, 2vw, 16px); /* 폰트 크기 동적 조정 */
+  min-height: 2vh; /* 최소 높이 비율로 설정 */
+}
+
+/* 각 열의 너비 비율 고정 */
+.transaction-list th:nth-child(1),
+.transaction-list td:nth-child(1) {
+  width: 30%; /* 금액 열 */
+}
+
+.transaction-list th:nth-child(2),
+.transaction-list td:nth-child(2) {
+  width: 20%; /* 계정 열 */
+}
+
+.transaction-list th:nth-child(3),
+.transaction-list td:nth-child(3) {
+  width: 50%; /* 메모 열 */
+}
+
+.transaction-list th {
+  background-color: #f4f4f4;
+}
+
+.transaction-list p {
+  color: #666;
+}

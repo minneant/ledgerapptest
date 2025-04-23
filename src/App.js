@@ -156,7 +156,6 @@ function App() {
               setSelectedYear(dateInfo.view.currentStart.getFullYear());
               setSelectedMonth(dateInfo.view.currentStart.getMonth() + 1);
             }}
-          
           />
           <div className="transaction-list">
             <h2>{selectedDate ? `${selectedDate} 거래 내역` : '날짜를 선택하세요'}</h2>
@@ -175,7 +174,11 @@ function App() {
                       <td style={{ color: trans.type === '수입' ? 'limegreen' : 'tomato' }}>
                         {trans.type === '수입' ? '+' : '-'}{trans.amount.toLocaleString()}
                       </td>
-                      <td>{trans.type === '수입' ? trans.creditAccount : trans.debitAccount}</td>
+                      <td>
+                        {trans.type === '수입'
+                          ? (trans.creditAccount.includes('.') ? trans.creditAccount.split('.').pop() : trans.creditAccount)
+                          : (trans.debitAccount.includes('.') ? trans.debitAccount.split('.').pop() : trans.debitAccount)}
+                      </td>
                       <td>{trans.note || '-'}</td>
                     </tr>
                   ))}
