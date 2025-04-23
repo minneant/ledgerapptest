@@ -15,6 +15,8 @@ function App() {
   const [activeTab, setActiveTab] = useState('calendar');
   const [selectedDate, setSelectedDate] = useState(null);
   const [events, setEvents] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [selectedTransactions, setSelectedTransactions] = useState([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const calendarRef = useRef(null);
@@ -24,6 +26,7 @@ function App() {
     try {
       const response = await axios.get(`${WEB_APP_URL}?action=getTransactions`);
       const transactions = response.data;
+      setTransactions(transactions); // 전체 거래 내역 저장
 
       const dailyMap = {};
 
@@ -78,7 +81,16 @@ function App() {
   const handleDateClick = (arg) => {
     const formattedDate = arg.dateStr;
     setSelectedDate(formattedDate);
-    setShowModal(true);
+    // 선택한 날짜의 거래 내역 필터링
+    const filteredTransactions = transactions.filter(
+      (trans) => trans.date.split('T')[0] === formattedDate
+    );
+    setSelectedTransactions(filteredTransactions);
+    // 하이라이트를 위해 FullCalendar 날짜 셀 업데이트
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      calendarApi.refetchEvents();
+    }
   };
 
   const handleDateSelect = () => {
@@ -112,46 +124,75 @@ function App() {
       {activeTab === 'chart' ? (
         <ChartView />
       ) : (
-        <FullCalendar
-          ref={calendarRef}
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          events={events}
-          dateClick={handleDateClick}
-          headerToolbar={{
-            left: 'prev',
-            center: 'title',
-            right: 'next',
-          }}
-          eventBackgroundColor="transparent"
-          eventBorderColor="transparent"
-          eventDisplay="block"
-
-          eventContent={(arg) => {
-            const { income = 0, expense = 0 } = arg.event.extendedProps;
-            return (
-              <div style={{ textAlign: 'left'}}>
-                {income > 0 && (
-                  <div style={{ color: 'limegreen' }}>+{income.toLocaleString()}</div>
-                )}
-                {expense > 0 && (
-                  <div style={{ color: 'tomato' }}>-{expense.toLocaleString()}</div>
-                )}
-              </div>
-            );
-          }}
-          datesSet={(dateInfo) => {
-            setSelectedYear(dateInfo.view.currentStart.getFullYear());
-            setSelectedMonth(dateInfo.view.currentStart.getMonth() + 1);
-          }}
-        />
+        <>
+          <FullCalendar
+            ref={calendarRef}
+            plugins={[dayGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            events={events}
+            dateClick={handleDateClick}
+            headerToolbar={{
+              left: 'prev',
+              center: 'title',
+              right: 'next',
+            }}
+            eventBackgroundColor="transparent"
+            eventBorderColor="transparent"
+            eventDisplay="block"
+            eventContent={(arg) => {
+              const { income = 0, expense = 0 } = arg.event.extendedProps;
+              return (
+                <div style={{ textAlign: 'left' }}>
+                  {income > 0 && (
+                    <div style={{ color: 'limegreen' }}>+{income.toLocaleString()}</div>
+                  )}
+                  {expense > 0 && (
+                    <div style={{ color: 'tomato' }}>-{expense.toLocaleString()}</div>
+                  )}
+                </div>
+              );
+            }}
+            datesSet={(dateInfo) => {
+              setSelectedYear(dateInfo.view.currentStart.getFullYear());
+              setSelectedMonth(dateInfo.view.currentStart.getMonth() + 1);
+            }}
+          
+          />
+          <div className="transaction-list">
+            <h2>{selectedDate ? `${selectedDate} 거래 내역` : '날짜를 선택하세요'}</h2>
+            {selectedTransactions.length > 0 ? (
+              <table>
+                <thead>
+                  <tr>
+                    <th>금액</th>
+                    <th>계정</th>
+                    <th>메모</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedTransactions.map((trans, index) => (
+                    <tr key={index}>
+                      <td style={{ color: trans.type === '수입' ? 'limegreen' : 'tomato' }}>
+                        {trans.type === '수입' ? '+' : '-'}{trans.amount.toLocaleString()}
+                      </td>
+                      <td>{trans.type === '수입' ? trans.creditAccount : trans.debitAccount}</td>
+                      <td>{trans.note || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>선택한 날짜에 거래 내역이 없습니다.</p>
+            )}
+          </div>
+        </>
       )}
 
       <button className="add-btn" onClick={() => setShowModal(true)}>+</button>
 
       {showModal && (
         <TransactionModal
-          onClose={handleModalClose} // ✅ 모달 닫을 때 거래내역 갱신
+          onClose={handleModalClose}
           initialDate={selectedDate || new Date().toISOString().split('T')[0]}
         />
       )}

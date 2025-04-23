@@ -149,3 +149,46 @@
     color: #cccccc; /* 연한 회색 */
     z-index: 1000;
   }
+
+
+  /* 호버 효과 */
+  .fc-daygrid-day:hover {
+    background-color: #f0f8ff;
+    cursor: pointer;
+  }
+
+  /* 이벤트 z-index 낮춤 */
+  .fc-event {
+    z-index: 5; /* 이벤트를 날짜 셀 아래로 */
+  }
+
+  /* 거래 내역 테이블 스타일 */
+  .transaction-list {
+    margin: 20px;
+    padding: 10px;
+  }
+
+  .transaction-list h2 {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+  }
+
+  .transaction-list table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .transaction-list th,
+  .transaction-list td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+
+  .transaction-list th {
+    background-color: #f4f4f4;
+  }
+
+  .transaction-list p {
+    color: #666;
+  }
