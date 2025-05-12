@@ -4,6 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import TransactionModal from './components/TransactionModal';
 import ChartView from './components/ChartView';
+import EditTransactionModal from './components/EditTransactionModal'; // 새 모달 임포트
 import axios from 'axios';
 import './styles.css';
 
@@ -19,6 +20,7 @@ function App() {
   const [selectedTransactions, setSelectedTransactions] = useState([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedTransactionId, setSelectedTransactionId] = useState(null); // 선택된 거래 ID
   const calendarRef = useRef(null);
 
   // 📌 거래내역 불러오는 함수
@@ -53,6 +55,14 @@ function App() {
       }));
 
       setEvents(calendarEvents);
+
+      // 선택된 날짜가 있으면 거래 내역 필터링 업데이트
+      if (selectedDate) {
+        const filteredTransactions = transactions.filter(
+          (trans) => trans.date.split('T')[0] === selectedDate
+        );
+        setSelectedTransactions(filteredTransactions);
+      }
     } catch (error) {
       console.error('거래내역 조회 오류:', error);
     }
@@ -104,6 +114,14 @@ function App() {
   const handleModalClose = () => {
     setShowModal(false);
     fetchTransactions(); // 💥 거래내역 다시 불러오기
+  };
+
+  const handleEditModalClose = () => {
+    setSelectedTransactionId(null);
+  };
+
+  const handleTransactionClick = (id) => {
+    setSelectedTransactionId(id); // 거래 ID 설정
   };
 
   const years = Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - i);
@@ -171,15 +189,26 @@ function App() {
                 <tbody>
                   {selectedTransactions.map((trans, index) => (
                     <tr key={index}>
-                      <td style={{ color: trans.type === '수입' ? 'limegreen' : 'tomato' }}>
+                      <td
+                        style={{ color: trans.type === '수입' ? 'limegreen' : 'tomato', cursor: 'pointer' }}
+                        onClick={() => handleTransactionClick(trans.id)}
+                      >
                         {trans.type === '수입' ? '+' : '-'}{trans.amount.toLocaleString()}
                       </td>
-                      <td>
+                      <td
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleTransactionClick(trans.id)}
+                      >
                         {trans.type === '수입'
                           ? (trans.creditAccount.includes('.') ? trans.creditAccount.split('.').pop() : trans.creditAccount)
                           : (trans.debitAccount.includes('.') ? trans.debitAccount.split('.').pop() : trans.debitAccount)}
                       </td>
-                      <td>{trans.note || '-'}</td>
+                      <td
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleTransactionClick(trans.id)}
+                      >
+                        {trans.note || '-'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -230,6 +259,15 @@ function App() {
             <button onClick={() => setShowDatePicker(false)}>취소</button>
           </div>
         </div>
+      )}
+
+      {selectedTransactionId && (
+        <EditTransactionModal
+          id={selectedTransactionId}
+          onClose={handleEditModalClose}
+          onUpdate={fetchTransactions} // 거래 목록 새로고침
+          webAppUrl = {WEB_APP_URL} // 추가가
+        />
       )}
 
       <div className="version">v000</div>
