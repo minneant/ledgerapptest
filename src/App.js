@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -24,7 +24,7 @@ function App() {
   const calendarRef = useRef(null);
 
   // 📌 거래내역 불러오는 함수
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     try {
       const response = await axios.get(`${WEB_APP_URL}?action=getTransactions`);
       const transactions = response.data;
@@ -66,12 +66,12 @@ function App() {
     } catch (error) {
       console.error('거래내역 조회 오류:', error);
     }
-  };
+  }, [selectedDate]);
 
   // 🚀 최초 실행 시 거래내역 로딩
   useEffect(() => {
     fetchTransactions();
-  }, []);
+  }, [fetchTransactions]);
 
   // 📆 제목 클릭 시 월선택 모달 열기
   useEffect(() => {
