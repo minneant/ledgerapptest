@@ -163,14 +163,14 @@ function TransactionModal({ onClose, initialDate }) {
 
           {/* 금액 */}
           <div className="flex items-center space-x-2">
-            <label htmlFor="amount" className="w-24">금액 예:</label>
+            <label htmlFor="amount" className="w-24">금액:</label>
             <div className="flex-1">
               <input
                 id="amount"
                 type="text"
                 value={formatAmount(formData.amount)}
                 onChange={(e) => handleInputChange('amount', e.target.value.replace(/,/g, ''))}
-                placeholder="55000"
+                placeholder=""
                 className="w-full border-gray-300 rounded-none"
                 aria-required="true"
               />
@@ -224,7 +224,7 @@ function TransactionModal({ onClose, initialDate }) {
 
           {/* 적요 */}
           <div className="flex items-center space-x-2">
-            <label htmlFor="description" className="w-24">적요 예:</label>
+            <label htmlFor="description" className="w-24">적요:</label>
             <div className="flex-1">
               <input
                 id="description"
@@ -239,14 +239,14 @@ function TransactionModal({ onClose, initialDate }) {
 
           {/* 메모 */}
           <div className="flex items-center space-x-2">
-            <label htmlFor="note" className="w-24">메모 추가 메모</label>
+            <label htmlFor="note" className="w-24">메모</label>
             <div className="flex-1">
               <input
                 id="note"
                 type="text"
                 value={formData.note}
                 onChange={(e) => handleInputChange('note', e.target.value)}
-                placeholder=""
+                placeholder="메모"
                 className="w-full border-gray-300 rounded-none"
               />
             </div>
