@@ -4,7 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import TransactionModal from './components/TransactionModal';
 import ChartView from './components/ChartView';
-import EditTransactionModal from './components/EditTransactionModal'; // 새 모달 임포트
+import EditTransactionModal from './components/EditTransactionModal.js'; // 새 모달 임포트
 import axios from 'axios';
 import './styles.css';
 
@@ -263,6 +263,7 @@ function App() {
 
       {selectedTransactionId && (
         <EditTransactionModal
+          key={selectedTransactionId}
           id={selectedTransactionId}
           onClose={handleEditModalClose}
           onUpdate={fetchTransactions} // 거래 목록 새로고침

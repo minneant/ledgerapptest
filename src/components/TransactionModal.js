@@ -4,6 +4,7 @@ import axios from 'axios';
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw0kQYuq1Zr5GN3T1yi7vBxrWamsMaB6lBzTMnubGPQMtdQEK1lgs986sun8I5mIU-c/exec';
 
 function TransactionModal({ onClose, initialDate }) {
+  const [isSaving, setIsSaving] = useState(false);
   const [accounts, setAccounts] = useState([]);
   const [formData, setFormData] = useState({
     date: initialDate,
@@ -58,8 +59,10 @@ function TransactionModal({ onClose, initialDate }) {
 
   // 저장 처리
   const saveTransaction = async () => {
+    if (isSaving) return;
     if (!validateForm()) return;
 
+    setIsSaving(true);
     try {
       const formBody = `data=${encodeURIComponent(JSON.stringify({
         date: formData.date,
@@ -89,6 +92,8 @@ function TransactionModal({ onClose, initialDate }) {
       }
     } catch (error) {
       alert('저장 실패: ' + error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -260,7 +265,7 @@ function TransactionModal({ onClose, initialDate }) {
             onClick={saveTransaction}
             className="px-4 py-1 bg-green-500 text-white rounded-none hover:bg-green-600 focus:outline-none"
           >
-            저장
+            {isSaving ? '저장 중...' : '저장'}
           </button>
         </div>
       </div>
