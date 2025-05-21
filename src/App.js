@@ -4,7 +4,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import TransactionModal from './components/TransactionModal';
 import ChartView from './components/ChartView';
-import EditTransactionModal from './components/EditTransactionModal.js'; // 새 모달 임포트
+import EditTransactionModal from './components/EditTransactionModal.js';
 import axios from 'axios';
 import './styles.css';
 
@@ -20,7 +20,7 @@ function App() {
   const [selectedTransactions, setSelectedTransactions] = useState([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedTransactionId, setSelectedTransactionId] = useState(null); // 선택된 거래 ID
+  const [selectedTransactionId, setSelectedTransactionId] = useState(null);
   const calendarRef = useRef(null);
 
   // 📌 거래내역 불러오는 함수
@@ -28,22 +28,29 @@ function App() {
     try {
       const response = await axios.get(`${WEB_APP_URL}?action=getTransactions`);
       const transactions = response.data;
-      setTransactions(transactions); // 전체 거래 내역 저장
+      setTransactions(transactions);
 
       const dailyMap = {};
-
       transactions.forEach((trans) => {
         const dateStr = trans.date.split('T')[0];
         const amount = parseInt(trans.amount);
+        const vatIn = parseInt(trans.vatInput) || 0;
+        const vatOut = parseInt(trans.vatOutput) || 0;
+        const netAmount =
+          trans.type === '수입'
+            ? amount - vatOut // (2505추가) 수입은 부가세 제외
+            : trans.type === '지출'
+            ? amount - vatIn  // (2505추가) 지출은 부가세 제외
+            : 0;
 
         if (!dailyMap[dateStr]) {
           dailyMap[dateStr] = { income: 0, expense: 0 };
         }
 
         if (trans.type === '수입') {
-          dailyMap[dateStr].income += amount;
+          dailyMap[dateStr].income += netAmount;
         } else if (trans.type === '지출') {
-          dailyMap[dateStr].expense += amount;
+          dailyMap[dateStr].expense += netAmount;
         }
       });
 
@@ -56,24 +63,19 @@ function App() {
 
       setEvents(calendarEvents);
 
-      // 선택된 날짜가 있으면 거래 내역 필터링 업데이트
       if (selectedDate) {
-        const filteredTransactions = transactions.filter(
-          (trans) => trans.date.split('T')[0] === selectedDate
-        );
-        setSelectedTransactions(filteredTransactions);
+        const filtered = transactions.filter((trans) => trans.date.split('T')[0] === selectedDate);
+        setSelectedTransactions(filtered);
       }
     } catch (error) {
       console.error('거래내역 조회 오류:', error);
     }
   }, [selectedDate]);
 
-  // 🚀 최초 실행 시 거래내역 로딩
   useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
 
-  // 📆 제목 클릭 시 월선택 모달 열기
   useEffect(() => {
     if (activeTab === 'calendar') {
       const timer = setTimeout(() => {
@@ -91,12 +93,8 @@ function App() {
   const handleDateClick = (arg) => {
     const formattedDate = arg.dateStr;
     setSelectedDate(formattedDate);
-    // 선택한 날짜의 거래 내역 필터링
-    const filteredTransactions = transactions.filter(
-      (trans) => trans.date.split('T')[0] === formattedDate
-    );
-    setSelectedTransactions(filteredTransactions);
-    // 하이라이트를 위해 FullCalendar 날짜 셀 업데이트
+    const filtered = transactions.filter((trans) => trans.date.split('T')[0] === formattedDate);
+    setSelectedTransactions(filtered);
     if (calendarRef.current) {
       const calendarApi = calendarRef.current.getApi();
       calendarApi.refetchEvents();
@@ -113,7 +111,7 @@ function App() {
 
   const handleModalClose = () => {
     setShowModal(false);
-    fetchTransactions(); // 💥 거래내역 다시 불러오기
+    fetchTransactions();
   };
 
   const handleEditModalClose = () => {
@@ -121,7 +119,35 @@ function App() {
   };
 
   const handleTransactionClick = (id) => {
-    setSelectedTransactionId(id); // 거래 ID 설정
+    setSelectedTransactionId(id);
+  };
+
+  // (2505추가) 현재 선택 월의 수입/지출/합계를 계산
+  const getMonthlySummary = () => {
+    const filtered = transactions.filter((t) => {
+      const date = new Date(t.date);
+      return (
+        date.getFullYear() === selectedYear &&
+        date.getMonth() + 1 === selectedMonth
+      );
+    });
+
+    let income = 0;
+    let expense = 0;
+
+    filtered.forEach((t) => {
+      const amount = parseInt(t.amount) || 0;
+      const vatInput = parseInt(t.vatInput) || 0;
+      const vatOutput = parseInt(t.vatOutput) || 0;
+
+      if (t.type === '수입') {
+        income += amount - vatOutput; // (2505추가)
+      } else if (t.type === '지출') {
+        expense += amount - vatInput; // (2505추가)
+      }
+    });
+
+    return { income, expense, total: income - expense };
   };
 
   const years = Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - i);
@@ -136,7 +162,44 @@ function App() {
         >
           {activeTab === 'calendar' ? '📊' : '📅'}
         </button>
-        <h1>복식부기 가계부</h1>
+
+        {/* (2505추가) 상단 수입/지출/합계 표시 */}
+        {(() => {
+          const { income, expense, total } = getMonthlySummary();
+          return (
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+              <div
+                style={{
+                  fontSize: '2.5rem',
+                  fontWeight: 'bold',
+                  color: total >= 0 ? 'limegreen' : 'tomato',
+                }}
+              >
+                {total >= 0 ? '' : '-'}
+                {Math.abs(total).toLocaleString()}원
+              </div>
+              <div
+                style={{
+                  fontSize: '1.1rem',
+                  marginTop: '0.5rem',
+                  color: '#333',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: '2rem',
+                }}
+              >
+                <span>
+                  <span style={{ color: '#666' }}>수입 </span>
+                  <span style={{ color: 'limegreen' }}>{income.toLocaleString()}원</span>
+                </span>
+                <span>
+                  <span style={{ color: '#666' }}>지출 </span>
+                  <span style={{ color: 'tomato' }}>{expense.toLocaleString()}원</span>
+                </span>
+              </div>
+            </div>
+          );
+        })()}
       </header>
 
       {activeTab === 'chart' ? (
@@ -175,6 +238,7 @@ function App() {
               setSelectedMonth(dateInfo.view.currentStart.getMonth() + 1);
             }}
           />
+
           <div className="transaction-list">
             <h2>{selectedDate ? `${selectedDate} 거래 내역` : '날짜를 선택하세요'}</h2>
             {selectedTransactions.length > 0 ? (
@@ -193,7 +257,8 @@ function App() {
                         style={{ color: trans.type === '수입' ? 'limegreen' : 'tomato', cursor: 'pointer' }}
                         onClick={() => handleTransactionClick(trans.id)}
                       >
-                        {trans.type === '수입' ? '+' : '-'}{trans.amount.toLocaleString()}
+                        {trans.type === '수입' ? '+' : '-'}
+                        {trans.amount.toLocaleString()}
                       </td>
                       <td
                         style={{ cursor: 'pointer' }}
@@ -234,24 +299,14 @@ function App() {
           <div className="modal-content">
             <h2>월 선택</h2>
             <div className="date-picker">
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              >
+              <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))}>
                 {years.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
+                  <option key={year} value={year}>{year}</option>
                 ))}
               </select>
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-              >
+              <select value={selectedMonth} onChange={(e) => setSelectedMonth(parseInt(e.target.value))}>
                 {months.map((month) => (
-                  <option key={month} value={month}>
-                    {month}월
-                  </option>
+                  <option key={month} value={month}>{month}월</option>
                 ))}
               </select>
             </div>
@@ -266,8 +321,8 @@ function App() {
           key={selectedTransactionId}
           id={selectedTransactionId}
           onClose={handleEditModalClose}
-          onUpdate={fetchTransactions} // 거래 목록 새로고침
-          webAppUrl = {WEB_APP_URL} // 추가가
+          onUpdate={fetchTransactions}
+          webAppUrl={WEB_APP_URL}
         />
       )}
 
