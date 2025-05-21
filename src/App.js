@@ -23,7 +23,6 @@ function App() {
   const [selectedTransactionId, setSelectedTransactionId] = useState(null);
   const calendarRef = useRef(null);
 
-  // 📌 거래내역 불러오는 함수
   const fetchTransactions = useCallback(async () => {
     try {
       const response = await axios.get(`${WEB_APP_URL}?action=getTransactions`);
@@ -37,19 +36,19 @@ function App() {
         const vatIn = parseInt(trans.vatInput) || 0;
         const vatOut = parseInt(trans.vatOutput) || 0;
         const netAmount =
-          trans.type === '수입'
-            ? amount - vatOut // (2505추가) 수입은 부가세 제외
-            : trans.type === '지출'
-            ? amount - vatIn  // (2505추가) 지출은 부가세 제외
+          trans.type === '수입' || trans.type === '현금유입'
+            ? amount - vatOut
+            : trans.type === '경비' || trans.type === '현금유출'
+            ? amount - vatIn
             : 0;
 
         if (!dailyMap[dateStr]) {
           dailyMap[dateStr] = { income: 0, expense: 0 };
         }
 
-        if (trans.type === '수입') {
+        if (trans.type === '수입' || trans.type === '현금유입') {
           dailyMap[dateStr].income += netAmount;
-        } else if (trans.type === '지출') {
+        } else if (trans.type === '경비' || trans.type === '현금유출') {
           dailyMap[dateStr].expense += netAmount;
         }
       });
@@ -64,7 +63,15 @@ function App() {
       setEvents(calendarEvents);
 
       if (selectedDate) {
-        const filtered = transactions.filter((trans) => trans.date.split('T')[0] === selectedDate);
+        const filtered = transactions.filter((trans) => {
+          const matchDate = trans.date.split('T')[0] === selectedDate;
+          const includeType =
+            trans.type === '수입' ||
+            trans.type === '현금유입' ||
+            trans.type === '경비' ||
+            trans.type === '현금유출';
+          return matchDate && includeType;
+        });
         setSelectedTransactions(filtered);
       }
     } catch (error) {
@@ -93,7 +100,15 @@ function App() {
   const handleDateClick = (arg) => {
     const formattedDate = arg.dateStr;
     setSelectedDate(formattedDate);
-    const filtered = transactions.filter((trans) => trans.date.split('T')[0] === formattedDate);
+    const filtered = transactions.filter((trans) => {
+      const matchDate = trans.date.split('T')[0] === formattedDate;
+      const includeType =
+        trans.type === '수입' ||
+        trans.type === '현금유입' ||
+        trans.type === '경비' ||
+        trans.type === '현금유출';
+      return matchDate && includeType;
+    });
     setSelectedTransactions(filtered);
     if (calendarRef.current) {
       const calendarApi = calendarRef.current.getApi();
@@ -122,7 +137,6 @@ function App() {
     setSelectedTransactionId(id);
   };
 
-  // (2505추가) 현재 선택 월의 수입/지출/합계를 계산
   const getMonthlySummary = () => {
     const filtered = transactions.filter((t) => {
       const date = new Date(t.date);
@@ -141,9 +155,9 @@ function App() {
       const vatOutput = parseInt(t.vatOutput) || 0;
 
       if (t.type === '수입') {
-        income += amount - vatOutput; // (2505추가)
-      } else if (t.type === '지출') {
-        expense += amount - vatInput; // (2505추가)
+        income += amount - vatOutput;
+      } else if (t.type === '경비') {
+        expense += amount - vatInput;
       }
     });
 
@@ -163,7 +177,6 @@ function App() {
           {activeTab === 'calendar' ? '📊' : '📅'}
         </button>
 
-        {/* (2505추가) 상단 수입/지출/합계 표시 */}
         {(() => {
           const { income, expense, total } = getMonthlySummary();
           return (
@@ -254,17 +267,17 @@ function App() {
                   {selectedTransactions.map((trans, index) => (
                     <tr key={index}>
                       <td
-                        style={{ color: trans.type === '수입' ? 'limegreen' : 'tomato', cursor: 'pointer' }}
+                        style={{ color: ['수입', '현금유입'].includes(trans.type) ? 'limegreen' : 'tomato', cursor: 'pointer' }}
                         onClick={() => handleTransactionClick(trans.id)}
                       >
-                        {trans.type === '수입' ? '+' : '-'}
+                        {['수입', '현금유입'].includes(trans.type) ? '+' : '-'}
                         {trans.amount.toLocaleString()}
                       </td>
                       <td
                         style={{ cursor: 'pointer' }}
                         onClick={() => handleTransactionClick(trans.id)}
                       >
-                        {trans.type === '수입'
+                        {['수입', '현금유입'].includes(trans.type)
                           ? (trans.creditAccount.includes('.') ? trans.creditAccount.split('.').pop() : trans.creditAccount)
                           : (trans.debitAccount.includes('.') ? trans.debitAccount.split('.').pop() : trans.debitAccount)}
                       </td>
