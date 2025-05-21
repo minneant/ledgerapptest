@@ -66,8 +66,8 @@ function TransactionModal({ onClose, initialDate }) {
       let resolvedType = formData.type;
 
       if (formData.type === '수입') {
-        if (credit?.type === '수익') {
-          resolvedType = '수익';
+        if (credit?.type === '수입') {
+          resolvedType = '수입';
         } else if (credit?.type === '자본') {
           resolvedType = '현금유입';
         }

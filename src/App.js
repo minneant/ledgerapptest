@@ -206,7 +206,7 @@ function App() {
                   <span style={{ color: 'limegreen' }}>{income.toLocaleString()}원</span>
                 </span>
                 <span>
-                  <span style={{ color: '#666' }}>지출 </span>
+                  <span style={{ color: '#666' }}>경비 </span>
                   <span style={{ color: 'tomato' }}>{expense.toLocaleString()}원</span>
                 </span>
               </div>
@@ -339,7 +339,6 @@ function App() {
         />
       )}
 
-      <div className="version">v000</div>
     </div>
   );
 }
