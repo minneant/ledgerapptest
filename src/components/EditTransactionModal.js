@@ -75,33 +75,49 @@ const EditTransactionModal = ({ id, onClose, onUpdate, webAppUrl }) => {
 
   // 수정 처리
   const handleUpdate = async () => {
-    const formBody = `action=updateTransaction&data=${encodeURIComponent(
-      JSON.stringify({
-        id: Number(id),
-        ...formData,
-      })
-    )}`;
+  const debit = accounts.find((a) => a.name === formData.debitAccount);
+  const credit = accounts.find((a) => a.name === formData.creditAccount);
 
-    try {
-      const response = await fetch(webAppUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formBody,
-      });
-      const data = await response.json();
-      if (data.status === 'success') {
-        alert('거래가 성공적으로 수정되었습니다.');
-        onUpdate();
-        onClose();
-      } else {
-        alert(data.message || '수정 실패');
-      }
-    } catch (err) {
-      alert('수정 중 오류가 발생했습니다: ' + err.message);
-    }
+  let resolvedType = formData.type;
+
+  if (formData.type === '수입') {
+    if (credit?.type === '수입') resolvedType = '수입';
+    else if (credit?.type === '자본') resolvedType = '현금유입';
+  } else if (formData.type === '지출') {
+    if (debit?.type === '비용') resolvedType = '경비';
+    else if (debit?.type === '자본') resolvedType = '현금유출';
+  }
+
+  const updatedData = {
+    ...formData,
+    type: resolvedType,
+    id: Number(id)
   };
+
+  const formBody = `action=updateTransaction&data=${encodeURIComponent(
+    JSON.stringify(updatedData)
+  )}`;
+
+  try {
+    const response = await fetch(webAppUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formBody,
+    });
+    const data = await response.json();
+    if (data.status === 'success') {
+      alert('거래가 성공적으로 수정되었습니다.');
+      onUpdate();
+      onClose();
+    } else {
+      alert(data.message || '수정 실패');
+    }
+  } catch (err) {
+    alert('수정 중 오류가 발생했습니다: ' + err.message);
+  }
+};
 
   // 삭제 처리
   const handleDelete = async () => {
