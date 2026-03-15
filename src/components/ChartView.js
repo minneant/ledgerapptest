@@ -126,6 +126,14 @@ function ChartView({ onExport, initialStartDate = "", initialEndDate = "" }) {
     [accountOptions]
   );
 
+  const capitalAccounts = useMemo(
+    () =>
+      accountOptions.filter(
+        (name) => accountMetaMap.get(name)?.type === "자본"
+      ),
+    [accountOptions, accountMetaMap]
+  );
+
   useEffect(() => {
     if (debitAccounts.length > 0 || creditAccounts.length > 0) return;
     if (expenseAccounts.length === 0 && incomeAccounts.length === 0) return;
@@ -375,6 +383,17 @@ function ChartView({ onExport, initialStartDate = "", initialEndDate = "" }) {
             >
               부가세
             </button>
+            <button
+              type="button"
+              className={`quick-btn ${
+                hasAllSelected(debitAccounts, capitalAccounts) ? "active" : ""
+              }`}
+              onClick={() =>
+                toggleGroup(debitAccounts, setDebitAccounts, capitalAccounts)
+              }
+            >
+              자본
+            </button>
           </div>
           <div
             style={{
@@ -467,6 +486,17 @@ function ChartView({ onExport, initialStartDate = "", initialEndDate = "" }) {
               }
             >
               부가세
+            </button>
+            <button
+              type="button"
+              className={`quick-btn ${
+                hasAllSelected(creditAccounts, capitalAccounts) ? "active" : ""
+              }`}
+              onClick={() =>
+                toggleGroup(creditAccounts, setCreditAccounts, capitalAccounts)
+              }
+            >
+              자본
             </button>
           </div>
           <div
