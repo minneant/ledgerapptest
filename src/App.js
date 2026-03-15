@@ -39,13 +39,10 @@ function App() {
     try {
       const response = await axios.get(`${WEB_APP_URL}?action=getTransactions`);
       const transactions = response.data;
-      const summaryTransactions = transactions.filter(
-        (trans) => !isCashType(trans.type)
-      );
       setTransactions(transactions);
 
       const dailyMap = {};
-      summaryTransactions.forEach((trans) => {
+      transactions.forEach((trans) => {
         const dateStr = trans.date.split("T")[0];
         const amount = parseInt(trans.amount);
         const vatIn = parseInt(trans.vatInput) || 0;
