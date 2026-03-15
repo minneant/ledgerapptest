@@ -21,6 +21,38 @@ const csvEscape = (value) => {
   return text;
 };
 
+const normalizeLedgerEntries = (rows) => {
+  if (!Array.isArray(rows)) return [];
+  return rows
+    .map((row) => {
+      if (Array.isArray(row)) {
+        return {
+          id: row[0],
+          quarter: row[1],
+          month: row[2],
+          date: row[3],
+          description: row[4],
+          note: row[5],
+          account: row[6],
+          debit: row[7],
+          credit: row[8],
+        };
+      }
+      return {
+        id: row.id,
+        quarter: row.quarter,
+        month: row.month,
+        date: row.date,
+        description: row.description,
+        note: row.note,
+        account: row.account || row.accountName || row.account_name,
+        debit: row.debit,
+        credit: row.credit,
+      };
+    })
+    .filter((entry) => entry.account);
+};
+
 function ChartView() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -33,12 +65,10 @@ function ChartView() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          `${WEB_APP_URL}?action=getTransactions`
-        );
-        setTransactions(response.data || []);
+        const response = await axios.get(`${WEB_APP_URL}?action=getLedger`);
+        setTransactions(normalizeLedgerEntries(response.data));
       } catch (error) {
-        console.error("거래내역 조회 오류:", error);
+        console.error("복식부기장부 조회 오류:", error);
       } finally {
         setLoading(false);
       }
@@ -48,9 +78,8 @@ function ChartView() {
 
   const accountOptions = useMemo(() => {
     const set = new Set();
-    transactions.forEach((trans) => {
-      if (trans.debitAccount) set.add(trans.debitAccount);
-      if (trans.creditAccount) set.add(trans.creditAccount);
+    transactions.forEach((entry) => {
+      if (entry.account) set.add(entry.account);
     });
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [transactions]);
@@ -59,15 +88,25 @@ function ChartView() {
     const start = startDate ? new Date(`${startDate}T00:00:00`) : null;
     const end = endDate ? new Date(`${endDate}T23:59:59`) : null;
 
-    return transactions.filter((trans) => {
-      const transDate = new Date(trans.date);
-      if (Number.isNaN(transDate.getTime())) return false;
+    return transactions.filter((entry) => {
+      const entryDate = new Date(entry.date);
+      if (Number.isNaN(entryDate.getTime())) return false;
 
-      if (start && transDate < start) return false;
-      if (end && transDate > end) return false;
+      if (start && entryDate < start) return false;
+      if (end && entryDate > end) return false;
 
-      if (debitAccount && trans.debitAccount !== debitAccount) return false;
-      if (creditAccount && trans.creditAccount !== creditAccount) return false;
+      if (
+        debitAccount &&
+        (entry.account !== debitAccount || parseAmount(entry.debit) <= 0)
+      ) {
+        return false;
+      }
+      if (
+        creditAccount &&
+        (entry.account !== creditAccount || parseAmount(entry.credit) <= 0)
+      ) {
+        return false;
+      }
 
       return true;
     });
@@ -75,22 +114,16 @@ function ChartView() {
 
   const accountSummary = useMemo(() => {
     const map = new Map();
-    filteredTransactions.forEach((trans) => {
-      const amount = parseAmount(trans.amount);
-      if (trans.debitAccount) {
-        const prev = map.get(trans.debitAccount) || { debit: 0, credit: 0 };
-        map.set(trans.debitAccount, {
-          debit: prev.debit + amount,
-          credit: prev.credit,
-        });
-      }
-      if (trans.creditAccount) {
-        const prev = map.get(trans.creditAccount) || { debit: 0, credit: 0 };
-        map.set(trans.creditAccount, {
-          debit: prev.debit,
-          credit: prev.credit + amount,
-        });
-      }
+    filteredTransactions.forEach((entry) => {
+      const account = entry.account;
+      if (!account) return;
+      const debit = parseAmount(entry.debit);
+      const credit = parseAmount(entry.credit);
+      const prev = map.get(account) || { debit: 0, credit: 0 };
+      map.set(account, {
+        debit: prev.debit + debit,
+        credit: prev.credit + credit,
+      });
     });
 
     return Array.from(map.entries())
@@ -111,21 +144,21 @@ function ChartView() {
   const handleExport = () => {
     const header = [
       "date",
-      "debitAccount",
-      "creditAccount",
-      "amount",
+      "account",
+      "debit",
+      "credit",
       "description",
       "note",
-      "type",
+      "id",
     ];
-    const rows = filteredTransactions.map((trans) => [
-      toDateOnly(trans.date),
-      trans.debitAccount,
-      trans.creditAccount,
-      parseAmount(trans.amount),
-      trans.description,
-      trans.note,
-      trans.type,
+    const rows = filteredTransactions.map((entry) => [
+      toDateOnly(entry.date),
+      entry.account,
+      parseAmount(entry.debit),
+      parseAmount(entry.credit),
+      entry.description,
+      entry.note,
+      entry.id,
     ]);
 
     const csv = [header, ...rows]
