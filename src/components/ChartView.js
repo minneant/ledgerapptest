@@ -143,29 +143,34 @@ function ChartView() {
 
   const handleExport = () => {
     const header = [
+      "id",
+      "quarter",
+      "month",
       "date",
+      "description",
+      "note",
       "account",
       "debit",
       "credit",
-      "description",
-      "note",
-      "id",
     ];
     const rows = filteredTransactions.map((entry) => [
+      entry.id,
+      entry.quarter,
+      entry.month,
       toDateOnly(entry.date),
+      entry.description,
+      entry.note,
       entry.account,
       parseAmount(entry.debit),
       parseAmount(entry.credit),
-      entry.description,
-      entry.note,
-      entry.id,
     ]);
 
     const csv = [header, ...rows]
       .map((row) => row.map(csvEscape).join(","))
       .join("\n");
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const bom = "\uFEFF";
+    const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     const labelStart = startDate || "all";
