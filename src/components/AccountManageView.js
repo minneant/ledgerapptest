@@ -14,7 +14,6 @@ function AccountManageView({ webAppUrl, onBack }) {
   const fetchAccounts = useCallback(async () => {
     try {
       setLoading(true);
-      setMessage("");
 
       const response = await fetch(`${webAppUrl}?action=getAccounts`);
       const data = await response.json();
@@ -152,9 +151,6 @@ function AccountManageView({ webAppUrl, onBack }) {
 
   const handleDeleteRow = (id) => {
     setRows((prev) => {
-      const target = prev.find((row) => row.id === id);
-      if (!target) return prev;
-
       const next = prev.filter((row) => row.id !== id);
       return resequenceWithinType(next);
     });
@@ -199,6 +195,7 @@ function AccountManageView({ webAppUrl, onBack }) {
     const validationMessage = validateRows();
     if (validationMessage) {
       setMessage(validationMessage);
+      alert(validationMessage);
       return;
     }
 
@@ -215,10 +212,10 @@ function AccountManageView({ webAppUrl, onBack }) {
       }));
 
       const body =
-        "action=saveAccounts&data=" +
+        "data=" +
         encodeURIComponent(JSON.stringify({ accounts: payload }));
 
-      const response = await fetch(webAppUrl, {
+      const response = await fetch(`${webAppUrl}?action=saveAccounts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -226,17 +223,35 @@ function AccountManageView({ webAppUrl, onBack }) {
         body,
       });
 
-      const result = await response.json();
+      const text = await response.text();
+      console.log("saveAccounts raw response:", text);
+
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (e) {
+        throw new Error("서버 응답이 JSON 형식이 아닙니다: " + text);
+      }
+
+      console.log("saveAccounts parsed result:", result);
 
       if (result?.status === "success") {
-        setMessage("계정표가 저장되었습니다.");
         await fetchAccounts();
+        const successMsg =
+          result?.message || "계정표가 저장되었습니다.";
+        setMessage(successMsg);
+        alert(successMsg);
       } else {
-        setMessage(result?.message || "계정 저장에 실패했습니다.");
+        const failMsg =
+          result?.message || "계정 저장에 실패했습니다.";
+        setMessage(failMsg);
+        alert(failMsg);
       }
     } catch (error) {
       console.error("계정 저장 오류:", error);
-      setMessage("계정 저장 중 오류가 발생했습니다.");
+      const errMsg = "계정 저장 중 오류가 발생했습니다: " + error.message;
+      setMessage(errMsg);
+      alert(errMsg);
     } finally {
       setSaving(false);
     }
