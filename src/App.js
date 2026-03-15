@@ -4,6 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import TransactionModal from "./components/TransactionModal";
 import ChartView from "./components/ChartView";
+import AccountManageView from "./components/AccountManageView";
 import EditTransactionModal from "./components/EditTransactionModal.js";
 import axios from "axios";
 import "./styles.css";
@@ -159,9 +160,9 @@ function App() {
       const vatInput = parseInt(t.vatInput) || 0;
       const vatOutput = parseInt(t.vatOutput) || 0;
 
-      if (t.type === "수입") {
+      if (t.type === "수입" || t.type === "현금유입") {
         income += amount - vatOutput;
-      } else if (t.type === "경비") {
+      } else if (t.type === "경비" || t.type === "현금유출") {
         expense += amount - vatInput;
       }
     });
@@ -180,9 +181,10 @@ function App() {
       <header>
         <button
           className="toggle-btn"
-          onClick={() =>
-            setActiveTab(activeTab === "calendar" ? "chart" : "calendar")
-          }
+          onClick={() => {
+            if (activeTab === "calendar") setActiveTab("chart");
+            else setActiveTab("calendar");
+          }}
         >
           {activeTab === "calendar" ? "📊" : "📅"}
         </button>
@@ -229,8 +231,36 @@ function App() {
         })()}
       </header>
 
-      {activeTab === "chart" ? (
-        <ChartView />
+      {activeTab === "accounts" ? (
+        <AccountManageView
+          webAppUrl={WEB_APP_URL}
+          onBack={() => setActiveTab("chart")}
+        />
+      ) : activeTab === "chart" ? (
+        <div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: "12px",
+            }}
+          >
+            <button
+              onClick={() => setActiveTab("accounts")}
+              style={{
+                border: "1px solid #ccc",
+                background: "#fff",
+                padding: "8px 12px",
+                cursor: "pointer",
+                borderRadius: "6px",
+                fontSize: "14px",
+              }}
+            >
+              계정관리
+            </button>
+          </div>
+          <ChartView />
+        </div>
       ) : (
         <>
           <FullCalendar
