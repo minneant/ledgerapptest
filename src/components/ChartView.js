@@ -344,15 +344,6 @@ function ChartView({ onExport, initialStartDate = "", initialEndDate = "" }) {
             <button
               type="button"
               className={`quick-btn ${
-                debitAccounts.length === 0 ? "active" : ""
-              }`}
-              onClick={() => setDebitAccounts([])}
-            >
-              해제
-            </button>
-            <button
-              type="button"
-              className={`quick-btn ${
                 hasAllSelected(debitAccounts, incomeAccounts) ? "active" : ""
               }`}
               onClick={() =>
@@ -444,15 +435,6 @@ function ChartView({ onExport, initialStartDate = "", initialEndDate = "" }) {
               }
             >
               전체
-            </button>
-            <button
-              type="button"
-              className={`quick-btn ${
-                creditAccounts.length === 0 ? "active" : ""
-              }`}
-              onClick={() => setCreditAccounts([])}
-            >
-              해제
             </button>
             <button
               type="button"
