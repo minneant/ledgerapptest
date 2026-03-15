@@ -18,6 +18,10 @@ const isExpenseType = (type) => type === EXPENSE_TYPE;
 const isCashType = (type) => type === CASH_IN_TYPE || type === CASH_OUT_TYPE;
 const isDisplayType = (type) =>
   [INCOME_TYPE, EXPENSE_TYPE, CASH_IN_TYPE, CASH_OUT_TYPE].includes(type);
+const isCalendarIncomeType = (type) =>
+  type === INCOME_TYPE || type === CASH_IN_TYPE;
+const isCalendarExpenseType = (type) =>
+  type === EXPENSE_TYPE || type === CASH_OUT_TYPE;
 
 const WEB_APP_URL =
   "https://script.google.com/macros/s/AKfycbw0kQYuq1Zr5GN3T1yi7vBxrWamsMaB6lBzTMnubGPQMtdQEK1lgs986sun8I5mIU-c/exec";
@@ -47,9 +51,9 @@ function App() {
         const amount = parseInt(trans.amount);
         const vatIn = parseInt(trans.vatInput) || 0;
         const vatOut = parseInt(trans.vatOutput) || 0;
-        const netAmount = isIncomeType(trans.type)
+        const netAmount = isCalendarIncomeType(trans.type)
           ? amount - vatOut
-          : isExpenseType(trans.type)
+          : isCalendarExpenseType(trans.type)
           ? amount - vatIn
           : 0;
 
@@ -57,9 +61,9 @@ function App() {
           dailyMap[dateStr] = { income: 0, expense: 0 };
         }
 
-        if (isIncomeType(trans.type)) {
+        if (isCalendarIncomeType(trans.type)) {
           dailyMap[dateStr].income += netAmount;
-        } else if (isExpenseType(trans.type)) {
+        } else if (isCalendarExpenseType(trans.type)) {
           dailyMap[dateStr].expense += netAmount;
         }
       });
