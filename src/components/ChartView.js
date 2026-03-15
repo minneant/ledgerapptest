@@ -180,10 +180,6 @@ function ChartView() {
     }
   };
 
-  const selectAccounts = (setList, names) => {
-    setList(Array.from(new Set(names)));
-  };
-
   const hasAllSelected = (list, names) =>
     names.length > 0 && names.every((name) => list.includes(name));
 
