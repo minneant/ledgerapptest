@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
 const WEB_APP_URL =
@@ -223,7 +223,7 @@ function ChartView({ onExport }) {
     );
   }, [accountSummary]);
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     const header = [
       "id",
       "quarter",
@@ -261,7 +261,7 @@ function ChartView({ onExport }) {
     link.download = `ledger_${labelStart}_${labelEnd}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-  };
+  }, [filteredTransactions, startDate, endDate]);
 
   useEffect(() => {
     if (typeof onExport === "function") {
