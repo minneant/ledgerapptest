@@ -126,6 +126,18 @@ function ChartView({ onExport, initialStartDate = "", initialEndDate = "" }) {
     [accountOptions]
   );
 
+  useEffect(() => {
+    if (debitAccounts.length > 0 || creditAccounts.length > 0) return;
+    if (expenseAccounts.length === 0 && incomeAccounts.length === 0) return;
+    setDebitAccounts(expenseAccounts);
+    setCreditAccounts(incomeAccounts);
+  }, [
+    debitAccounts.length,
+    creditAccounts.length,
+    expenseAccounts,
+    incomeAccounts,
+  ]);
+
   const filteredTransactions = useMemo(() => {
     const start = startDate ? new Date(`${startDate}T00:00:00`) : null;
     const end = endDate ? new Date(`${endDate}T23:59:59`) : null;
