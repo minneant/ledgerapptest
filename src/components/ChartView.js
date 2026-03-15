@@ -184,6 +184,20 @@ function ChartView() {
     setList(Array.from(new Set(names)));
   };
 
+  const hasAllSelected = (list, names) =>
+    names.length > 0 && names.every((name) => list.includes(name));
+
+  const toggleGroup = (list, setList, names) => {
+    if (names.length === 0) return;
+    if (hasAllSelected(list, names)) {
+      setList(list.filter((item) => !names.includes(item)));
+      return;
+    }
+    const merged = new Set(list);
+    names.forEach((name) => merged.add(name));
+    setList(Array.from(merged));
+  };
+
   const accountSummary = useMemo(() => {
     const map = new Map();
     filteredTransactions.forEach((entry) => {
@@ -266,9 +280,10 @@ function ChartView() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
           gap: "12px",
           marginBottom: "16px",
+          alignItems: "end",
         }}
       >
         <label>
@@ -289,6 +304,31 @@ function ChartView() {
             style={{ width: "100%", padding: "6px", marginTop: "6px" }}
           />
         </label>
+        <div style={{ display: "flex", alignItems: "flex-end" }}>
+          <button
+            onClick={handleExport}
+            style={{
+              padding: "8px 12px",
+              borderRadius: "6px",
+              border: "1px solid #ccc",
+              background: "#fff",
+              cursor: "pointer",
+              width: "100%",
+            }}
+          >
+            기간별 장부 CSV 내보내기
+          </button>
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gap: "16px",
+          marginBottom: "16px",
+        }}
+      >
         <div>
           <div style={{ marginBottom: "6px", fontWeight: "bold" }}>
             차변 계정 선택
@@ -303,28 +343,44 @@ function ChartView() {
           <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
             <button
               type="button"
-              onClick={() => selectAccounts(setDebitAccounts, accountOptions)}
+              className={`quick-btn ${
+                hasAllSelected(debitAccounts, accountOptions) ? "active" : ""
+              }`}
+              onClick={() => toggleGroup(debitAccounts, setDebitAccounts, accountOptions)}
             >
               전체
             </button>
-            <button type="button" onClick={() => setDebitAccounts([])}>
+            <button
+              type="button"
+              className={`quick-btn ${debitAccounts.length === 0 ? "active" : ""}`}
+              onClick={() => setDebitAccounts([])}
+            >
               해제
             </button>
             <button
               type="button"
-              onClick={() => selectAccounts(setDebitAccounts, incomeAccounts)}
+              className={`quick-btn ${
+                hasAllSelected(debitAccounts, incomeAccounts) ? "active" : ""
+              }`}
+              onClick={() => toggleGroup(debitAccounts, setDebitAccounts, incomeAccounts)}
             >
               수입
             </button>
             <button
               type="button"
-              onClick={() => selectAccounts(setDebitAccounts, expenseAccounts)}
+              className={`quick-btn ${
+                hasAllSelected(debitAccounts, expenseAccounts) ? "active" : ""
+              }`}
+              onClick={() => toggleGroup(debitAccounts, setDebitAccounts, expenseAccounts)}
             >
               경비
             </button>
             <button
               type="button"
-              onClick={() => selectAccounts(setDebitAccounts, vatAccounts)}
+              className={`quick-btn ${
+                hasAllSelected(debitAccounts, vatAccounts) ? "active" : ""
+              }`}
+              onClick={() => toggleGroup(debitAccounts, setDebitAccounts, vatAccounts)}
             >
               부가세
             </button>
@@ -370,28 +426,44 @@ function ChartView() {
           <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
             <button
               type="button"
-              onClick={() => selectAccounts(setCreditAccounts, accountOptions)}
+              className={`quick-btn ${
+                hasAllSelected(creditAccounts, accountOptions) ? "active" : ""
+              }`}
+              onClick={() => toggleGroup(creditAccounts, setCreditAccounts, accountOptions)}
             >
               전체
             </button>
-            <button type="button" onClick={() => setCreditAccounts([])}>
+            <button
+              type="button"
+              className={`quick-btn ${creditAccounts.length === 0 ? "active" : ""}`}
+              onClick={() => setCreditAccounts([])}
+            >
               해제
             </button>
             <button
               type="button"
-              onClick={() => selectAccounts(setCreditAccounts, incomeAccounts)}
+              className={`quick-btn ${
+                hasAllSelected(creditAccounts, incomeAccounts) ? "active" : ""
+              }`}
+              onClick={() => toggleGroup(creditAccounts, setCreditAccounts, incomeAccounts)}
             >
               수입
             </button>
             <button
               type="button"
-              onClick={() => selectAccounts(setCreditAccounts, expenseAccounts)}
+              className={`quick-btn ${
+                hasAllSelected(creditAccounts, expenseAccounts) ? "active" : ""
+              }`}
+              onClick={() => toggleGroup(creditAccounts, setCreditAccounts, expenseAccounts)}
             >
               경비
             </button>
             <button
               type="button"
-              onClick={() => selectAccounts(setCreditAccounts, vatAccounts)}
+              className={`quick-btn ${
+                hasAllSelected(creditAccounts, vatAccounts) ? "active" : ""
+              }`}
+              onClick={() => toggleGroup(creditAccounts, setCreditAccounts, vatAccounts)}
             >
               부가세
             </button>
@@ -425,21 +497,6 @@ function ChartView() {
         </div>
       </div>
 
-      <div style={{ marginBottom: "12px" }}>
-        <button
-          onClick={handleExport}
-          style={{
-            padding: "8px 12px",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            background: "#fff",
-            cursor: "pointer",
-          }}
-        >
-          기간별 장부 CSV 내보내기
-        </button>
-      </div>
-
       {loading ? (
         <p>불러오는 중...</p>
       ) : (
@@ -453,6 +510,9 @@ function ChartView() {
                 </th>
                 <th style={{ textAlign: "right", padding: "8px" }}>
                   대변 합계
+                </th>
+                <th style={{ textAlign: "right", padding: "8px" }}>
+                  대변-차변
                 </th>
               </tr>
             </thead>
@@ -480,11 +540,21 @@ function ChartView() {
                   >
                     {row.credit.toLocaleString()}
                   </td>
+                  <td
+                    style={{
+                      padding: "8px",
+                      textAlign: "right",
+                      borderBottom: "1px solid #eee",
+                      color: row.credit - row.debit >= 0 ? "limegreen" : "tomato",
+                    }}
+                  >
+                    {(row.credit - row.debit).toLocaleString()}
+                  </td>
                 </tr>
               ))}
               {accountSummary.length === 0 && (
                 <tr>
-                  <td colSpan={3} style={{ padding: "12px", color: "#666" }}>
+                  <td colSpan={4} style={{ padding: "12px", color: "#666" }}>
                     조건에 해당하는 데이터가 없습니다.
                   </td>
                 </tr>
@@ -499,6 +569,9 @@ function ChartView() {
                   </td>
                   <td style={{ padding: "8px", textAlign: "right" }}>
                     {totals.credit.toLocaleString()}
+                  </td>
+                  <td style={{ padding: "8px", textAlign: "right" }}>
+                    {(totals.credit - totals.debit).toLocaleString()}
                   </td>
                 </tr>
               </tfoot>

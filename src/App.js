@@ -367,9 +367,11 @@ function App() {
         </>
       )}
 
-      <button className="add-btn" onClick={() => setShowModal(true)}>
-        +
-      </button>
+      {activeTab !== "chart" && (
+        <button className="add-btn" onClick={() => setShowModal(true)}>
+          +
+        </button>
+      )}
 
       {showModal && (
         <TransactionModal
