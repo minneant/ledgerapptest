@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
 function AccountManageView({ webAppUrl, onBack }) {
@@ -14,7 +14,7 @@ function AccountManageView({ webAppUrl, onBack }) {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get(`${webAppUrl}?action=getAccounts`);
@@ -25,11 +25,11 @@ function AccountManageView({ webAppUrl, onBack }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [webAppUrl]);
 
   useEffect(() => {
     fetchAccounts();
-  }, []);
+  }, [fetchAccounts]);
 
   const startEdit = (account) => {
     setEditingName(account.name);
@@ -50,6 +50,7 @@ function AccountManageView({ webAppUrl, onBack }) {
       type: "",
       vatApplicable: "",
     });
+    setMessage("");
   };
 
   const handleSave = async () => {
