@@ -30,6 +30,7 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [activeTab, setActiveTab] = useState("calendar");
+  const [exportLedger, setExportLedger] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [events, setEvents] = useState([]);
   const [transactions, setTransactions] = useState([]);
@@ -247,10 +248,26 @@ function App() {
           <div
             style={{
               display: "flex",
-              justifyContent: "flex-end",
+              justifyContent: "space-between",
               marginBottom: "12px",
+              alignItems: "center",
+              gap: "8px",
             }}
           >
+            <button
+              onClick={() => exportLedger && exportLedger()}
+              style={{
+                border: "1px solid #ccc",
+                background: "#fff",
+                padding: "8px 12px",
+                cursor: "pointer",
+                borderRadius: "6px",
+                fontSize: "14px",
+              }}
+              disabled={!exportLedger}
+            >
+              기간별 장부 CSV 내보내기
+            </button>
             <button
               onClick={() => setActiveTab("accounts")}
               style={{
@@ -265,7 +282,7 @@ function App() {
               계정관리
             </button>
           </div>
-          <ChartView />
+          <ChartView onExport={setExportLedger} />
         </div>
       ) : (
         <>

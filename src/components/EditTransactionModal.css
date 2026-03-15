@@ -30,13 +30,19 @@
     font-weight: bold;
   }
   
-  .form-group input,
-  .form-group select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.form-error {
+  margin-top: 6px;
+  color: #d32f2f;
+  font-size: 12px;
+}
   
   .button-group {
     display: flex;

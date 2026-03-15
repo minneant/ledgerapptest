@@ -236,3 +236,16 @@ header h1 {
 .quick-btn:active {
   transform: translateY(0);
 }
+
+.chart-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 900px) {
+  .chart-filter-grid {
+    grid-template-columns: 1fr;
+  }
+}

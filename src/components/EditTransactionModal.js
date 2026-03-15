@@ -15,6 +15,8 @@ const EditTransactionModal = ({ id, onClose, onUpdate, webAppUrl }) => {
     note: "",
   });
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState(null);
 
   // 계정 목록 조회
@@ -77,6 +79,7 @@ const EditTransactionModal = ({ id, onClose, onUpdate, webAppUrl }) => {
 
   // 수정 처리
   const handleUpdate = async () => {
+    if (isSaving) return;
     const debit = accounts.find((a) => a.name === formData.debitAccount);
     const credit = accounts.find((a) => a.name === formData.creditAccount);
 
@@ -101,6 +104,7 @@ const EditTransactionModal = ({ id, onClose, onUpdate, webAppUrl }) => {
     )}`;
 
     try {
+      setIsSaving(true);
       const response = await fetch(webAppUrl, {
         method: "POST",
         headers: {
@@ -118,13 +122,17 @@ const EditTransactionModal = ({ id, onClose, onUpdate, webAppUrl }) => {
       }
     } catch (err) {
       alert("수정 중 오류가 발생했습니다: " + err.message);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   // 삭제 처리
   const handleDelete = async () => {
+    if (isDeleting) return;
     if (window.confirm("정말로 삭제하시겠습니까?")) {
       try {
+        setIsDeleting(true);
         const formBody = `action=deleteTransaction&id=${encodeURIComponent(
           String(id)
         )}`;
@@ -145,6 +153,8 @@ const EditTransactionModal = ({ id, onClose, onUpdate, webAppUrl }) => {
         }
       } catch (err) {
         alert("삭제 중 오류가 발생했습니다: " + err.message);
+      } finally {
+        setIsDeleting(false);
       }
     }
   };
@@ -231,8 +241,12 @@ const EditTransactionModal = ({ id, onClose, onUpdate, webAppUrl }) => {
           />
         </div>
         <div className="button-group">
-          <button onClick={handleUpdate}>수정</button>
-          <button onClick={handleDelete}>삭제</button>
+          <button onClick={handleUpdate} disabled={isSaving || isDeleting}>
+            {isSaving ? "수정 중..." : "수정"}
+          </button>
+          <button onClick={handleDelete} disabled={isSaving || isDeleting}>
+            {isDeleting ? "삭제 중..." : "삭제"}
+          </button>
           <button onClick={onClose}>닫기</button>
         </div>
       </div>

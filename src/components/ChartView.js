@@ -53,7 +53,7 @@ const normalizeLedgerEntries = (rows) => {
     .filter((entry) => entry.account);
 };
 
-function ChartView() {
+function ChartView({ onExport }) {
   const [transactions, setTransactions] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -263,6 +263,12 @@ function ChartView() {
     URL.revokeObjectURL(url);
   };
 
+  useEffect(() => {
+    if (typeof onExport === "function") {
+      onExport(handleExport);
+    }
+  }, [onExport, handleExport]);
+
   return (
     <div style={{ padding: "12px" }}>
       <div style={{ marginBottom: "12px" }}>
@@ -273,22 +279,14 @@ function ChartView() {
         </p>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "12px",
-          marginBottom: "16px",
-          alignItems: "end",
-        }}
-      >
+      <div className="chart-filter-grid">
         <label>
           시작일
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            style={{ width: "100%", padding: "6px", marginTop: "6px" }}
+            style={{ width: "100%", padding: "8px", marginTop: "8px" }}
           />
         </label>
         <label>
@@ -297,34 +295,9 @@ function ChartView() {
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            style={{ width: "100%", padding: "6px", marginTop: "6px" }}
+            style={{ width: "100%", padding: "8px", marginTop: "8px" }}
           />
         </label>
-        <div style={{ display: "flex", alignItems: "flex-end" }}>
-          <button
-            onClick={handleExport}
-            style={{
-              padding: "8px 12px",
-              borderRadius: "6px",
-              border: "1px solid #ccc",
-              background: "#fff",
-              cursor: "pointer",
-              width: "100%",
-            }}
-          >
-            기간별 장부 CSV 내보내기
-          </button>
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: "16px",
-          marginBottom: "16px",
-        }}
-      >
         <div>
           <div style={{ marginBottom: "6px", fontWeight: "bold" }}>
             차변 계정 선택
@@ -334,7 +307,7 @@ function ChartView() {
             value={debitSearch}
             onChange={(e) => setDebitSearch(e.target.value)}
             placeholder="검색"
-            style={{ width: "100%", padding: "6px", marginBottom: "8px" }}
+            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
           />
           <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
             <button
@@ -342,13 +315,17 @@ function ChartView() {
               className={`quick-btn ${
                 hasAllSelected(debitAccounts, accountOptions) ? "active" : ""
               }`}
-              onClick={() => toggleGroup(debitAccounts, setDebitAccounts, accountOptions)}
+              onClick={() =>
+                toggleGroup(debitAccounts, setDebitAccounts, accountOptions)
+              }
             >
               전체
             </button>
             <button
               type="button"
-              className={`quick-btn ${debitAccounts.length === 0 ? "active" : ""}`}
+              className={`quick-btn ${
+                debitAccounts.length === 0 ? "active" : ""
+              }`}
               onClick={() => setDebitAccounts([])}
             >
               해제
@@ -358,7 +335,9 @@ function ChartView() {
               className={`quick-btn ${
                 hasAllSelected(debitAccounts, incomeAccounts) ? "active" : ""
               }`}
-              onClick={() => toggleGroup(debitAccounts, setDebitAccounts, incomeAccounts)}
+              onClick={() =>
+                toggleGroup(debitAccounts, setDebitAccounts, incomeAccounts)
+              }
             >
               수입
             </button>
@@ -367,7 +346,9 @@ function ChartView() {
               className={`quick-btn ${
                 hasAllSelected(debitAccounts, expenseAccounts) ? "active" : ""
               }`}
-              onClick={() => toggleGroup(debitAccounts, setDebitAccounts, expenseAccounts)}
+              onClick={() =>
+                toggleGroup(debitAccounts, setDebitAccounts, expenseAccounts)
+              }
             >
               경비
             </button>
@@ -376,25 +357,27 @@ function ChartView() {
               className={`quick-btn ${
                 hasAllSelected(debitAccounts, vatAccounts) ? "active" : ""
               }`}
-              onClick={() => toggleGroup(debitAccounts, setDebitAccounts, vatAccounts)}
+              onClick={() =>
+                toggleGroup(debitAccounts, setDebitAccounts, vatAccounts)
+              }
             >
               부가세
             </button>
           </div>
           <div
             style={{
-              maxHeight: "220px",
+              maxHeight: "240px",
               overflowY: "auto",
               border: "1px solid #ddd",
-              borderRadius: "6px",
-              padding: "8px",
-              marginTop: "8px",
+              borderRadius: "8px",
+              padding: "10px",
+              marginTop: "10px",
             }}
           >
             {filteredDebitOptions.map((account) => (
               <label
                 key={`debit-${account}`}
-                style={{ display: "block", marginBottom: "4px" }}
+                style={{ display: "block", marginBottom: "6px" }}
               >
                 <input
                   type="checkbox"
@@ -417,7 +400,7 @@ function ChartView() {
             value={creditSearch}
             onChange={(e) => setCreditSearch(e.target.value)}
             placeholder="검색"
-            style={{ width: "100%", padding: "6px", marginBottom: "8px" }}
+            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
           />
           <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
             <button
@@ -425,13 +408,17 @@ function ChartView() {
               className={`quick-btn ${
                 hasAllSelected(creditAccounts, accountOptions) ? "active" : ""
               }`}
-              onClick={() => toggleGroup(creditAccounts, setCreditAccounts, accountOptions)}
+              onClick={() =>
+                toggleGroup(creditAccounts, setCreditAccounts, accountOptions)
+              }
             >
               전체
             </button>
             <button
               type="button"
-              className={`quick-btn ${creditAccounts.length === 0 ? "active" : ""}`}
+              className={`quick-btn ${
+                creditAccounts.length === 0 ? "active" : ""
+              }`}
               onClick={() => setCreditAccounts([])}
             >
               해제
@@ -441,7 +428,9 @@ function ChartView() {
               className={`quick-btn ${
                 hasAllSelected(creditAccounts, incomeAccounts) ? "active" : ""
               }`}
-              onClick={() => toggleGroup(creditAccounts, setCreditAccounts, incomeAccounts)}
+              onClick={() =>
+                toggleGroup(creditAccounts, setCreditAccounts, incomeAccounts)
+              }
             >
               수입
             </button>
@@ -450,7 +439,9 @@ function ChartView() {
               className={`quick-btn ${
                 hasAllSelected(creditAccounts, expenseAccounts) ? "active" : ""
               }`}
-              onClick={() => toggleGroup(creditAccounts, setCreditAccounts, expenseAccounts)}
+              onClick={() =>
+                toggleGroup(creditAccounts, setCreditAccounts, expenseAccounts)
+              }
             >
               경비
             </button>
@@ -459,25 +450,27 @@ function ChartView() {
               className={`quick-btn ${
                 hasAllSelected(creditAccounts, vatAccounts) ? "active" : ""
               }`}
-              onClick={() => toggleGroup(creditAccounts, setCreditAccounts, vatAccounts)}
+              onClick={() =>
+                toggleGroup(creditAccounts, setCreditAccounts, vatAccounts)
+              }
             >
               부가세
             </button>
           </div>
           <div
             style={{
-              maxHeight: "220px",
+              maxHeight: "240px",
               overflowY: "auto",
               border: "1px solid #ddd",
-              borderRadius: "6px",
-              padding: "8px",
-              marginTop: "8px",
+              borderRadius: "8px",
+              padding: "10px",
+              marginTop: "10px",
             }}
           >
             {filteredCreditOptions.map((account) => (
               <label
                 key={`credit-${account}`}
-                style={{ display: "block", marginBottom: "4px" }}
+                style={{ display: "block", marginBottom: "6px" }}
               >
                 <input
                   type="checkbox"

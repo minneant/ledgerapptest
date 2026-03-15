@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "./EditTransactionModal.css";
 
 const WEB_APP_URL =
   "https://script.google.com/macros/s/AKfycbw0kQYuq1Zr5GN3T1yi7vBxrWamsMaB6lBzTMnubGPQMtdQEK1lgs986sun8I5mIU-c/exec";
@@ -121,152 +122,113 @@ function TransactionModal({ onClose, initialDate }) {
   };
 
   return (
-    <div className="modal fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="modal-content bg-white p-6 w-full max-w-md shadow-lg relative">
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-black focus:outline-none"
-          aria-label="모달 닫기"
-        >
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M19 4h-1.5l-.5-.5h-5l-.5.5H5v1h14V4zM6 7v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zm2 2h8v10H8V9z" />
-          </svg>
-        </button>
-
-        <h2 className="text-lg font-bold mb-4">트랜잭션 추가</h2>
-        <div className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <label className="w-24">날짜</label>
-            <input
-              type="date"
-              value={formData.date}
-              onChange={(e) => handleInputChange("date", e.target.value)}
-              className="flex-1 border-gray-300 rounded-none"
-            />
-            {errors.date && (
-              <p className="text-sm text-red-600">{errors.date}</p>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <span className="w-24">거래 유형</span>
-            <div className="flex-1 flex space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="type"
-                  value="지출"
-                  checked={formData.type === "지출"}
-                  onChange={() => handleInputChange("type", "지출")}
-                  className="mr-1"
-                />
-                지출
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="type"
-                  value="수입"
-                  checked={formData.type === "수입"}
-                  onChange={() => handleInputChange("type", "수입")}
-                  className="mr-1"
-                />
-                수입
-              </label>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <label className="w-24">금액</label>
-            <input
-              type="text"
-              value={formatAmount(formData.amount)}
-              onChange={(e) =>
-                handleInputChange("amount", e.target.value.replace(/,/g, ""))
-              }
-              className="flex-1 border-gray-300 rounded-none"
-            />
-            {errors.amount && (
-              <p className="text-sm text-red-600">{errors.amount}</p>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <label className="w-24">차변 계정</label>
-            <select
-              value={formData.debitAccount}
-              onChange={(e) =>
-                handleInputChange("debitAccount", e.target.value)
-              }
-              className="flex-1 border-gray-300 rounded-none"
-            >
-              <option value="">선택</option>
-              {accounts.map((account) => (
-                <option key={account.name} value={account.name}>
-                  {account.name}
-                </option>
-              ))}
-            </select>
-            {errors.debitAccount && (
-              <p className="text-sm text-red-600">{errors.debitAccount}</p>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <label className="w-24">대변 계정</label>
-            <select
-              value={formData.creditAccount}
-              onChange={(e) =>
-                handleInputChange("creditAccount", e.target.value)
-              }
-              className="flex-1 border-gray-300 rounded-none"
-            >
-              <option value="">선택</option>
-              {accounts.map((account) => (
-                <option key={account.name} value={account.name}>
-                  {account.name}
-                </option>
-              ))}
-            </select>
-            {errors.creditAccount && (
-              <p className="text-sm text-red-600">{errors.creditAccount}</p>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <label className="w-24">적요</label>
-            <input
-              type="text"
-              value={formData.description}
-              onChange={(e) => handleInputChange("description", e.target.value)}
-              className="flex-1 border-gray-300 rounded-none"
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <label className="w-24">메모</label>
-            <input
-              type="text"
-              value={formData.note}
-              onChange={(e) => handleInputChange("note", e.target.value)}
-              className="flex-1 border-gray-300 rounded-none"
-            />
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <h2>트랜잭션 추가</h2>
+        <div className="form-group">
+          <label>날짜:</label>
+          <input
+            type="date"
+            value={formData.date}
+            onChange={(e) => handleInputChange("date", e.target.value)}
+          />
+          {errors.date && <p className="form-error">{errors.date}</p>}
+        </div>
+        <div className="form-group">
+          <label>거래 유형:</label>
+          <div>
+            <label style={{ marginRight: "12px" }}>
+              <input
+                type="radio"
+                name="type"
+                value="지출"
+                checked={formData.type === "지출"}
+                onChange={() => handleInputChange("type", "지출")}
+              />
+              지출
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="type"
+                value="수입"
+                checked={formData.type === "수입"}
+                onChange={() => handleInputChange("type", "수입")}
+              />
+              수입
+            </label>
           </div>
         </div>
-
-        <div className="mt-4 flex justify-end space-x-2">
-          <button
-            onClick={onClose}
-            className="px-4 py-1 bg-gray-200 text-black rounded-none hover:bg-gray-300"
+        <div className="form-group">
+          <label>금액:</label>
+          <input
+            type="text"
+            value={formatAmount(formData.amount)}
+            onChange={(e) =>
+              handleInputChange("amount", e.target.value.replace(/,/g, ""))
+            }
+          />
+          {errors.amount && <p className="form-error">{errors.amount}</p>}
+        </div>
+        <div className="form-group">
+          <label>차변 계정:</label>
+          <select
+            value={formData.debitAccount}
+            onChange={(e) =>
+              handleInputChange("debitAccount", e.target.value)
+            }
           >
-            취소
-          </button>
-          <button
-            onClick={saveTransaction}
-            className="px-4 py-1 bg-green-500 text-white rounded-none hover:bg-green-600"
+            <option value="">선택</option>
+            {accounts.map((account) => (
+              <option key={account.name} value={account.name}>
+                {account.name}
+              </option>
+            ))}
+          </select>
+          {errors.debitAccount && (
+            <p className="form-error">{errors.debitAccount}</p>
+          )}
+        </div>
+        <div className="form-group">
+          <label>대변 계정:</label>
+          <select
+            value={formData.creditAccount}
+            onChange={(e) =>
+              handleInputChange("creditAccount", e.target.value)
+            }
           >
+            <option value="">선택</option>
+            {accounts.map((account) => (
+              <option key={account.name} value={account.name}>
+                {account.name}
+              </option>
+            ))}
+          </select>
+          {errors.creditAccount && (
+            <p className="form-error">{errors.creditAccount}</p>
+          )}
+        </div>
+        <div className="form-group">
+          <label>적요:</label>
+          <input
+            type="text"
+            value={formData.description}
+            onChange={(e) => handleInputChange("description", e.target.value)}
+          />
+        </div>
+        <div className="form-group">
+          <label>메모:</label>
+          <input
+            type="text"
+            value={formData.note}
+            onChange={(e) => handleInputChange("note", e.target.value)}
+          />
+        </div>
+        <div className="button-group">
+          <button onClick={saveTransaction} disabled={isSaving}>
             {isSaving ? "저장 중..." : "저장"}
           </button>
+          <button onClick={onClose}>닫기</button>
         </div>
       </div>
     </div>
