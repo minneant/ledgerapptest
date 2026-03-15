@@ -53,12 +53,12 @@ const normalizeLedgerEntries = (rows) => {
     .filter((entry) => entry.account);
 };
 
-function ChartView({ onExport }) {
+function ChartView({ onExport, initialStartDate = "", initialEndDate = "" }) {
   const [transactions, setTransactions] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(initialStartDate);
+  const [endDate, setEndDate] = useState(initialEndDate);
   const [debitAccounts, setDebitAccounts] = useState([]);
   const [creditAccounts, setCreditAccounts] = useState([]);
   const [debitSearch, setDebitSearch] = useState("");

@@ -61,18 +61,6 @@
     cursor: pointer;
   }
 
-.form-radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-}
-
-.form-radio {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
   
   .button-group button:nth-child(1) {
     background-color: #4CAF50;

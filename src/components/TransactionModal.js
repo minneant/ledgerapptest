@@ -136,28 +136,13 @@ function TransactionModal({ onClose, initialDate }) {
         </div>
         <div className="form-group">
           <label>거래 유형:</label>
-          <div className="form-radio-group">
-            <label className="form-radio">
-              <input
-                type="radio"
-                name="type"
-                value="지출"
-                checked={formData.type === "지출"}
-                onChange={() => handleInputChange("type", "지출")}
-              />
-              지출
-            </label>
-            <label className="form-radio">
-              <input
-                type="radio"
-                name="type"
-                value="수입"
-                checked={formData.type === "수입"}
-                onChange={() => handleInputChange("type", "수입")}
-              />
-              수입
-            </label>
-          </div>
+          <select
+            value={formData.type}
+            onChange={(e) => handleInputChange("type", e.target.value)}
+          >
+            <option value="지출">지출</option>
+            <option value="수입">수입</option>
+          </select>
         </div>
         <div className="form-group">
           <label>금액:</label>

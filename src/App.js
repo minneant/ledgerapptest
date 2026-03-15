@@ -282,7 +282,19 @@ function App() {
               계정관리
             </button>
           </div>
-          <ChartView onExport={setExportLedger} />
+          <ChartView
+            onExport={setExportLedger}
+            initialStartDate={`${selectedYear}-${String(selectedMonth).padStart(
+              2,
+              "0"
+            )}-01`}
+            initialEndDate={`${selectedYear}-${String(selectedMonth).padStart(
+              2,
+              "0"
+            )}-${String(
+              new Date(selectedYear, selectedMonth, 0).getDate()
+            ).padStart(2, "0")}`}
+          />
         </div>
       ) : (
         <>
