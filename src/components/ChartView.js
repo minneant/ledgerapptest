@@ -265,7 +265,7 @@ function ChartView({ onExport }) {
 
   useEffect(() => {
     if (typeof onExport === "function") {
-      onExport(handleExport);
+      onExport(() => handleExport);
     }
   }, [onExport, handleExport]);
 

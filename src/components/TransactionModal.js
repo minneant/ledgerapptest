@@ -136,8 +136,8 @@ function TransactionModal({ onClose, initialDate }) {
         </div>
         <div className="form-group">
           <label>거래 유형:</label>
-          <div>
-            <label style={{ marginRight: "12px" }}>
+          <div className="form-radio-group">
+            <label className="form-radio">
               <input
                 type="radio"
                 name="type"
@@ -147,7 +147,7 @@ function TransactionModal({ onClose, initialDate }) {
               />
               지출
             </label>
-            <label>
+            <label className="form-radio">
               <input
                 type="radio"
                 name="type"
