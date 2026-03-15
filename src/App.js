@@ -12,6 +12,11 @@ import "./styles.css";
 const WEB_APP_URL =
   "https://script.google.com/macros/s/AKfycbw0kQYuq1Zr5GN3T1yi7vBxrWamsMaB6lBzTMnubGPQMtdQEK1lgs986sun8I5mIU-c/exec";
 
+const CASH_IN_TYPES = ["?꾧툑?좎엯"];
+const CASH_OUT_TYPES = ["?꾧툑?좎텧"];
+const isCashType = (type) =>
+  CASH_IN_TYPES.includes(type) || CASH_OUT_TYPES.includes(type);
+
 function App() {
   const [showModal, setShowModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -29,10 +34,13 @@ function App() {
     try {
       const response = await axios.get(`${WEB_APP_URL}?action=getTransactions`);
       const transactions = response.data;
+      const summaryTransactions = transactions.filter(
+        (trans) => !isCashType(trans.type)
+      );
       setTransactions(transactions);
 
       const dailyMap = {};
-      transactions.forEach((trans) => {
+      summaryTransactions.forEach((trans) => {
         const dateStr = trans.date.split("T")[0];
         const amount = parseInt(trans.amount);
         const vatIn = parseInt(trans.vatInput) || 0;
@@ -151,11 +159,12 @@ function App() {
         date.getMonth() + 1 === selectedMonth
       );
     });
+    const summaryFiltered = filtered.filter((t) => !isCashType(t.type));
 
     let income = 0;
     let expense = 0;
 
-    filtered.forEach((t) => {
+    summaryFiltered.forEach((t) => {
       const amount = parseInt(t.amount) || 0;
       const vatInput = parseInt(t.vatInput) || 0;
       const vatOutput = parseInt(t.vatOutput) || 0;
