@@ -37,6 +37,9 @@ function App() {
   const [selectedTransactions, setSelectedTransactions] = useState([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [currentCalendarDate, setCurrentCalendarDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [selectedTransactionId, setSelectedTransactionId] = useState(null);
   const calendarRef = useRef(null);
 
@@ -302,6 +305,7 @@ function App() {
             ref={calendarRef}
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
+            initialDate={currentCalendarDate}
             events={events}
             dateClick={handleDateClick}
             headerToolbar={{
@@ -332,6 +336,9 @@ function App() {
             datesSet={(dateInfo) => {
               setSelectedYear(dateInfo.view.currentStart.getFullYear());
               setSelectedMonth(dateInfo.view.currentStart.getMonth() + 1);
+              setCurrentCalendarDate(
+                dateInfo.view.currentStart.toISOString().split("T")[0]
+              );
             }}
           />
 
