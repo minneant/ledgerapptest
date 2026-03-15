@@ -55,18 +55,25 @@ const normalizeLedgerEntries = (rows) => {
 
 function ChartView() {
   const [transactions, setTransactions] = useState([]);
+  const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [debitAccount, setDebitAccount] = useState("");
-  const [creditAccount, setCreditAccount] = useState("");
+  const [debitAccounts, setDebitAccounts] = useState([]);
+  const [creditAccounts, setCreditAccounts] = useState([]);
+  const [debitSearch, setDebitSearch] = useState("");
+  const [creditSearch, setCreditSearch] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${WEB_APP_URL}?action=getLedger`);
-        setTransactions(normalizeLedgerEntries(response.data));
+        const [ledgerResponse, accountResponse] = await Promise.all([
+          axios.get(`${WEB_APP_URL}?action=getLedger`),
+          axios.get(`${WEB_APP_URL}?action=getAccounts`),
+        ]);
+        setTransactions(normalizeLedgerEntries(ledgerResponse.data));
+        setAccounts(accountResponse.data || []);
       } catch (error) {
         console.error("복식부기장부 조회 오류:", error);
       } finally {
@@ -76,13 +83,48 @@ function ChartView() {
     fetchData();
   }, []);
 
+  const accountMetaMap = useMemo(() => {
+    const map = new Map();
+    accounts.forEach((acc) => {
+      if (acc && acc.name) map.set(acc.name, acc);
+    });
+    return map;
+  }, [accounts]);
+
   const accountOptions = useMemo(() => {
+    if (accounts.length > 0) {
+      return accounts
+        .map((acc) => acc.name)
+        .filter(Boolean)
+        .sort((a, b) => a.localeCompare(b));
+    }
     const set = new Set();
     transactions.forEach((entry) => {
       if (entry.account) set.add(entry.account);
     });
     return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [transactions]);
+  }, [accounts, transactions]);
+
+  const incomeAccounts = useMemo(
+    () =>
+      accountOptions.filter(
+        (name) => accountMetaMap.get(name)?.type === "수입"
+      ),
+    [accountOptions, accountMetaMap]
+  );
+
+  const expenseAccounts = useMemo(
+    () =>
+      accountOptions.filter(
+        (name) => accountMetaMap.get(name)?.type === "비용"
+      ),
+    [accountOptions, accountMetaMap]
+  );
+
+  const vatAccounts = useMemo(
+    () => accountOptions.filter((name) => name.includes("부가세")),
+    [accountOptions]
+  );
 
   const filteredTransactions = useMemo(() => {
     const start = startDate ? new Date(`${startDate}T00:00:00`) : null;
@@ -95,22 +137,52 @@ function ChartView() {
       if (start && entryDate < start) return false;
       if (end && entryDate > end) return false;
 
-      if (
-        debitAccount &&
-        (entry.account !== debitAccount || parseAmount(entry.debit) <= 0)
-      ) {
-        return false;
-      }
-      if (
-        creditAccount &&
-        (entry.account !== creditAccount || parseAmount(entry.credit) <= 0)
-      ) {
-        return false;
+      const debitFilterOn = debitAccounts.length > 0;
+      const creditFilterOn = creditAccounts.length > 0;
+      const debitMatch =
+        parseAmount(entry.debit) > 0 && debitAccounts.includes(entry.account);
+      const creditMatch =
+        parseAmount(entry.credit) > 0 && creditAccounts.includes(entry.account);
+
+      if (debitFilterOn || creditFilterOn) {
+        if (debitFilterOn && creditFilterOn) {
+          if (!debitMatch && !creditMatch) return false;
+        } else if (debitFilterOn) {
+          if (!debitMatch) return false;
+        } else if (creditFilterOn) {
+          if (!creditMatch) return false;
+        }
       }
 
       return true;
     });
-  }, [transactions, startDate, endDate, debitAccount, creditAccount]);
+  }, [transactions, startDate, endDate, debitAccounts, creditAccounts]);
+
+  const filteredDebitOptions = useMemo(() => {
+    const keyword = debitSearch.trim().toLowerCase();
+    if (!keyword) return accountOptions;
+    return accountOptions.filter((name) => name.toLowerCase().includes(keyword));
+  }, [accountOptions, debitSearch]);
+
+  const filteredCreditOptions = useMemo(() => {
+    const keyword = creditSearch.trim().toLowerCase();
+    if (!keyword) return accountOptions;
+    return accountOptions.filter((name) =>
+      name.toLowerCase().includes(keyword)
+    );
+  }, [accountOptions, creditSearch]);
+
+  const toggleAccount = (list, setList, name) => {
+    if (list.includes(name)) {
+      setList(list.filter((item) => item !== name));
+    } else {
+      setList([...list, name]);
+    }
+  };
+
+  const selectAccounts = (setList, names) => {
+    setList(Array.from(new Set(names)));
+  };
 
   const accountSummary = useMemo(() => {
     const map = new Map();
@@ -217,36 +289,140 @@ function ChartView() {
             style={{ width: "100%", padding: "6px", marginTop: "6px" }}
           />
         </label>
-        <label>
-          차변 계정
-          <select
-            value={debitAccount}
-            onChange={(e) => setDebitAccount(e.target.value)}
-            style={{ width: "100%", padding: "6px", marginTop: "6px" }}
+        <div>
+          <div style={{ marginBottom: "6px", fontWeight: "bold" }}>
+            차변 계정 선택
+          </div>
+          <input
+            type="text"
+            value={debitSearch}
+            onChange={(e) => setDebitSearch(e.target.value)}
+            placeholder="검색"
+            style={{ width: "100%", padding: "6px", marginBottom: "8px" }}
+          />
+          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => selectAccounts(setDebitAccounts, accountOptions)}
+            >
+              전체
+            </button>
+            <button type="button" onClick={() => setDebitAccounts([])}>
+              해제
+            </button>
+            <button
+              type="button"
+              onClick={() => selectAccounts(setDebitAccounts, incomeAccounts)}
+            >
+              수입
+            </button>
+            <button
+              type="button"
+              onClick={() => selectAccounts(setDebitAccounts, expenseAccounts)}
+            >
+              경비
+            </button>
+            <button
+              type="button"
+              onClick={() => selectAccounts(setDebitAccounts, vatAccounts)}
+            >
+              부가세
+            </button>
+          </div>
+          <div
+            style={{
+              maxHeight: "220px",
+              overflowY: "auto",
+              border: "1px solid #ddd",
+              borderRadius: "6px",
+              padding: "8px",
+              marginTop: "8px",
+            }}
           >
-            <option value="">전체</option>
-            {accountOptions.map((account) => (
-              <option key={`debit-${account}`} value={account}>
+            {filteredDebitOptions.map((account) => (
+              <label
+                key={`debit-${account}`}
+                style={{ display: "block", marginBottom: "4px" }}
+              >
+                <input
+                  type="checkbox"
+                  checked={debitAccounts.includes(account)}
+                  onChange={() =>
+                    toggleAccount(debitAccounts, setDebitAccounts, account)
+                  }
+                />{" "}
                 {account}
-              </option>
+              </label>
             ))}
-          </select>
-        </label>
-        <label>
-          대변 계정
-          <select
-            value={creditAccount}
-            onChange={(e) => setCreditAccount(e.target.value)}
-            style={{ width: "100%", padding: "6px", marginTop: "6px" }}
+          </div>
+        </div>
+        <div>
+          <div style={{ marginBottom: "6px", fontWeight: "bold" }}>
+            대변 계정 선택
+          </div>
+          <input
+            type="text"
+            value={creditSearch}
+            onChange={(e) => setCreditSearch(e.target.value)}
+            placeholder="검색"
+            style={{ width: "100%", padding: "6px", marginBottom: "8px" }}
+          />
+          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => selectAccounts(setCreditAccounts, accountOptions)}
+            >
+              전체
+            </button>
+            <button type="button" onClick={() => setCreditAccounts([])}>
+              해제
+            </button>
+            <button
+              type="button"
+              onClick={() => selectAccounts(setCreditAccounts, incomeAccounts)}
+            >
+              수입
+            </button>
+            <button
+              type="button"
+              onClick={() => selectAccounts(setCreditAccounts, expenseAccounts)}
+            >
+              경비
+            </button>
+            <button
+              type="button"
+              onClick={() => selectAccounts(setCreditAccounts, vatAccounts)}
+            >
+              부가세
+            </button>
+          </div>
+          <div
+            style={{
+              maxHeight: "220px",
+              overflowY: "auto",
+              border: "1px solid #ddd",
+              borderRadius: "6px",
+              padding: "8px",
+              marginTop: "8px",
+            }}
           >
-            <option value="">전체</option>
-            {accountOptions.map((account) => (
-              <option key={`credit-${account}`} value={account}>
+            {filteredCreditOptions.map((account) => (
+              <label
+                key={`credit-${account}`}
+                style={{ display: "block", marginBottom: "4px" }}
+              >
+                <input
+                  type="checkbox"
+                  checked={creditAccounts.includes(account)}
+                  onChange={() =>
+                    toggleAccount(creditAccounts, setCreditAccounts, account)
+                  }
+                />{" "}
                 {account}
-              </option>
+              </label>
             ))}
-          </select>
-        </label>
+          </div>
+        </div>
       </div>
 
       <div style={{ marginBottom: "12px" }}>
