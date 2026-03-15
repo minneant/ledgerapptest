@@ -9,13 +9,18 @@ import EditTransactionModal from "./components/EditTransactionModal.js";
 import axios from "axios";
 import "./styles.css";
 
+const INCOME_TYPE = "수입";
+const EXPENSE_TYPE = "경비";
+const CASH_IN_TYPE = "현금유입";
+const CASH_OUT_TYPE = "현금유출";
+const isIncomeType = (type) => type === INCOME_TYPE;
+const isExpenseType = (type) => type === EXPENSE_TYPE;
+const isCashType = (type) => type === CASH_IN_TYPE || type === CASH_OUT_TYPE;
+const isDisplayType = (type) =>
+  [INCOME_TYPE, EXPENSE_TYPE, CASH_IN_TYPE, CASH_OUT_TYPE].includes(type);
+
 const WEB_APP_URL =
   "https://script.google.com/macros/s/AKfycbw0kQYuq1Zr5GN3T1yi7vBxrWamsMaB6lBzTMnubGPQMtdQEK1lgs986sun8I5mIU-c/exec";
-
-const CASH_IN_TYPES = ["?꾧툑?좎엯"];
-const CASH_OUT_TYPES = ["?꾧툑?좎텧"];
-const isCashType = (type) =>
-  CASH_IN_TYPES.includes(type) || CASH_OUT_TYPES.includes(type);
 
 function App() {
   const [showModal, setShowModal] = useState(false);
@@ -45,20 +50,19 @@ function App() {
         const amount = parseInt(trans.amount);
         const vatIn = parseInt(trans.vatInput) || 0;
         const vatOut = parseInt(trans.vatOutput) || 0;
-        const netAmount =
-          trans.type === "수입" || trans.type === "현금유입"
-            ? amount - vatOut
-            : trans.type === "경비" || trans.type === "현금유출"
-            ? amount - vatIn
-            : 0;
+        const netAmount = isIncomeType(trans.type)
+          ? amount - vatOut
+          : isExpenseType(trans.type)
+          ? amount - vatIn
+          : 0;
 
         if (!dailyMap[dateStr]) {
           dailyMap[dateStr] = { income: 0, expense: 0 };
         }
 
-        if (trans.type === "수입" || trans.type === "현금유입") {
+        if (isIncomeType(trans.type)) {
           dailyMap[dateStr].income += netAmount;
-        } else if (trans.type === "경비" || trans.type === "현금유출") {
+        } else if (isExpenseType(trans.type)) {
           dailyMap[dateStr].expense += netAmount;
         }
       });
@@ -77,11 +81,7 @@ function App() {
       if (selectedDate) {
         const filtered = transactions.filter((trans) => {
           const matchDate = trans.date.split("T")[0] === selectedDate;
-          const includeType =
-            trans.type === "수입" ||
-            trans.type === "현금유입" ||
-            trans.type === "경비" ||
-            trans.type === "현금유출";
+          const includeType = isDisplayType(trans.type);
           return matchDate && includeType;
         });
         setSelectedTransactions(filtered);
@@ -114,11 +114,7 @@ function App() {
     setSelectedDate(formattedDate);
     const filtered = transactions.filter((trans) => {
       const matchDate = trans.date.split("T")[0] === formattedDate;
-      const includeType =
-        trans.type === "수입" ||
-        trans.type === "현금유입" ||
-        trans.type === "경비" ||
-        trans.type === "현금유출";
+      const includeType = isDisplayType(trans.type);
       return matchDate && includeType;
     });
     setSelectedTransactions(filtered);
@@ -169,9 +165,9 @@ function App() {
       const vatInput = parseInt(t.vatInput) || 0;
       const vatOutput = parseInt(t.vatOutput) || 0;
 
-      if (t.type === "수입" || t.type === "현금유입") {
+      if (isIncomeType(t.type)) {
         income += amount - vatOutput;
-      } else if (t.type === "경비" || t.type === "현금유출") {
+      } else if (isExpenseType(t.type)) {
         expense += amount - vatInput;
       }
     });
@@ -327,21 +323,25 @@ function App() {
                     <tr key={index}>
                       <td
                         style={{
-                          color: ["수입", "현금유입"].includes(trans.type)
+                          color: [INCOME_TYPE, CASH_IN_TYPE].includes(
+                            trans.type
+                          )
                             ? "limegreen"
                             : "tomato",
                           cursor: "pointer",
                         }}
                         onClick={() => handleTransactionClick(trans.id)}
                       >
-                        {["수입", "현금유입"].includes(trans.type) ? "+" : "-"}
+                        {[INCOME_TYPE, CASH_IN_TYPE].includes(trans.type)
+                          ? "+"
+                          : "-"}
                         {trans.amount.toLocaleString()}
                       </td>
                       <td
                         style={{ cursor: "pointer" }}
                         onClick={() => handleTransactionClick(trans.id)}
                       >
-                        {["수입", "현금유입"].includes(trans.type)
+                        {[INCOME_TYPE, CASH_IN_TYPE].includes(trans.type)
                           ? trans.creditAccount.includes(".")
                             ? trans.creditAccount.split(".").pop()
                             : trans.creditAccount
